@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'models/quest.dart';
+import 'screens/quest_overlay.dart';
+
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Assegurar que este ya inicializado Flutter, como tocamos ventana habran cambios inesperados si no aseguramos que esta inicializado
+  WidgetsFlutterBinding.ensureInitialized();
 
-  await windowManager.ensureInitialized(); // Lo mismo que lo de arriba pero con el window manager
+  await windowManager.ensureInitialized();
 
-  WindowOptions windowOptions = const WindowOptions(  //
+  const windowOptions = WindowOptions(
     size: Size(350, 600),
     center: true,
     title: "QuestBoard",
@@ -23,57 +26,41 @@ void main() async {
     },
   );
 
-  runApp(const MyApp());
+  runApp(
+    QuestBoardApp(
+      quests: [
+        Quest(
+          title: "Acabar Benchmark",
+          completed: false,
+        ),
+        Quest(
+          title: "Crear Overlay",
+          completed: false,
+        ),
+        Quest(
+          title: "Configurar Flutter",
+          completed: true,
+        ),
+      ],
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class QuestBoardApp extends StatelessWidget {
+  final List<Quest> quests;
+
+  const QuestBoardApp({
+    super.key,
+    required this.quests,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "QUEST LOG",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    "□ Acabar Benchmark",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    "□ Crear Overlay",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    "■ Configurar Flutter",
-                    style: TextStyle(color: Colors.green),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      )
+      home: QuestOverlay(
+        quests: quests,
+      ),
     );
   }
 }

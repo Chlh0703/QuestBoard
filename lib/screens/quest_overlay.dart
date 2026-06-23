@@ -1,0 +1,94 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import '../models/quest.dart';
+import '../widgets/quest_list.dart';
+
+class QuestOverlay extends StatefulWidget { // Caso de stateful ya que hay dadas guardadas en esta "imagen" por la que esta imagen cambia segun x situacion
+
+  final List<Quest> quests;
+
+  const QuestOverlay({
+    super.key,
+    required this.quests,
+  });
+
+  @override
+  State<QuestOverlay> createState() => _QuestOverlayState();
+  // Override de createState().
+  // Flutter llama a esta funcion cuando crea el StatefulWidget.
+  // Debe devolver una instancia de la clase State asociada,
+  // que contendrá los datos mutables y la lógica que puede cambiar
+  // durante la vida del widget (timers, animaciones, variables, etc.).
+
+}
+
+class _QuestOverlayState extends State<QuestOverlay> {
+  Timer? _hideTimer; // instanciador del timer
+  bool _overlayVisible = true;
+
+  void _startHideTimer() {
+    _hideTimer?.cancel(); // Cancela lo pendiente del timer, basicamente un reset
+    _hideTimer = Timer( // Aqui es donde define cuanto dura y que hace
+      const Duration(seconds: 3),
+          () async {
+        setState(() { // SetState es para decir que el estado ha cambiado y que es necesario re-build, y se especifica que es lo que se ha cambiado
+          _overlayVisible = false;
+        });
+      },
+    );
+  }
+
+  void _cancelHideTimer() {
+    _hideTimer?.cancel();
+  }
+
+  @override
+  void dispose() { // Funcion para detruir la widget al apagar
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold( // Scaffold es la estructura básica de una pantalla Material Design.
+      backgroundColor: Colors.transparent,
+      body: MouseRegion(
+        onEnter: (_) => _cancelHideTimer(),
+        onExit: (_) => _startHideTimer(),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _overlayVisible ? Colors.grey.withValues(alpha: 0.55) : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+
+              child: _overlayVisible ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "QUEST BOARD",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  QuestList(
+                    quests: widget.quests,
+                  ),
+                ],
+              )
+                  : const SizedBox.shrink(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
