@@ -3,11 +3,20 @@ import 'package:window_manager/window_manager.dart';
 
 import 'models/quest.dart';
 import 'screens/quest_overlay.dart';
+import 'services/hotkey_service.dart';
+import 'services/overlay_controller.dart';
+
+final overlayController = OverlayController();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await windowManager.ensureInitialized();
+  await HotkeyService.initialize(
+    showOverlay: () { // Definir que showOverlay será X funcion
+      overlayController.show();
+    },
+  );
 
   const windowOptions = WindowOptions(
     size: Size(350, 600),
