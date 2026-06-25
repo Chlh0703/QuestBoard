@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../models/quest.dart';
 import '../widgets/quest_list.dart';
 import '../main.dart';
+import '../services/overlay_service.dart';
+
 
 class QuestOverlay extends StatefulWidget { // Caso de stateful ya que hay dadas guardadas en esta "imagen" por la que esta imagen cambia segun x situacion
 
@@ -27,15 +29,25 @@ class QuestOverlay extends StatefulWidget { // Caso de stateful ya que hay dadas
 class _QuestOverlayState extends State<QuestOverlay> {
   Timer? _hideTimer; // instanciador del timer
 
+  late VoidCallback _overlayListener;
+
   @override
   void initState() {
     super.initState();
-    overlayController.addListener(() {
+
+    _overlayListener = () async {
       if (overlayController.visible) {
-        _cancelHideTimer(); // al escuchar que se ha activado, inicia timer tambien
+        print("He escuchado que se ha encendido");
+        _startHideTimer(); // al escuchar que se ha activado, inicia timer tambien
+        await OverlayService.disableClickThrough();
+      } else if (!overlayController.visible) {
+        print("He escuchado que se ha ido");
+        await OverlayService.enableClickThrough();
       }
       setState(() {}); // Reset de estado
-    });
+    };
+
+    overlayController.addListener(_overlayListener);
   }
 
   void _startHideTimer() {
@@ -43,9 +55,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
     _hideTimer = Timer( // Aqui es donde define cuanto dura y que hace
       const Duration(seconds: 3),
           () async {
-        setState(() { // SetState es para decir que el estado ha cambiado y que es necesario re-build, y se especifica que es lo que se ha cambiado
-          overlayController.visible = false;
-        });
+        overlayController.hide();
       },
     );
   }

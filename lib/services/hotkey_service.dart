@@ -2,11 +2,9 @@ import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:flutter/services.dart';
 
 class HotkeyService {
-
-  static Future<void> initialize({ // Static significa que no cal rcear instancia, Future void esque es asincrona y no se espera nada a devolver
-    required VoidCallback showOverlay, // Guarda una funcion como variable
-  }) async {
-
+  // Static significa que no cal rcear instancia, Future void esque es asincrona y no se espera nada a devolver
+  // Guarda una funcion como variable (VoidCallback)
+  static Future<void> initialize({required VoidCallback showOverlay,}) async {
     await hotKeyManager.unregisterAll(); // Elimina los atajos previos
     final hotKey = HotKey(  // Definicion del botón que queremos hacer
       key: PhysicalKeyboardKey.keyS,
@@ -23,4 +21,5 @@ class HotkeyService {
       },
     );
   }
+
 }
