@@ -64,6 +64,12 @@ class _QuestOverlayState extends State<QuestOverlay> {
     _hideTimer?.cancel();
   }
 
+  void _toggleQuest(Quest quest) {
+    setState(() {
+      quest.completed = !quest.completed;
+    });
+  }
+
   @override
   void dispose() { // Funcion para detruir la widget al apagar
     _hideTimer?.cancel();
@@ -102,6 +108,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
                   const SizedBox(height: 20), // Una caja vacia para poner espacio
                   QuestList(
                     quests: widget.quests,
+                    onQuestTap: _toggleQuest,
                   ),
                 ],
               )

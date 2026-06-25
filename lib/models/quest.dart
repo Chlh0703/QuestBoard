@@ -2,7 +2,7 @@
 
 class Quest {
   final String title;
-  final bool completed;
+  bool completed;
 
   Quest({
     required this.title,
