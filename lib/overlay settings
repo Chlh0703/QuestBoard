@@ -1,0 +1,106 @@
+import 'package:flutter/cupertino.dart';
+
+import '../models/quest.dart';
+
+class QuestService extends ChangeNotifier {
+  final List<Quest> _quests = [];
+
+  List<Quest> get quests => _quests;
+
+  void addQuest(Quest quest){
+    _quests.add(quest);
+    notifyListeners();
+  }
+
+  void removeQuest(Quest quest){
+    if(_quests.contains(quest)){
+      _quests.remove(quest);
+      notifyListeners();
+    }
+  }
+
+  void updateQuest(Quest quest, { String? newTitle, String? newDescription, bool changeCompletion = false,}) {
+    if (!_quests.contains(quest)) return;
+    if (newTitle != null) {
+      quest.setTitle(newTitle);
+    }
+    if (newDescription != null) {
+      quest.setDescription(newDescription);
+    }
+    if (changeCompletion) {
+      quest.changeCompletion();
+    }
+    notifyListeners();
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import Cocoa
+import FlutterMacOS
+
+class MainFlutterWindow: NSWindow {
+    override func awakeFromNib() {
+        let flutterViewController = FlutterViewController()
+
+        let channel = FlutterMethodChannel(
+            name: "questboard/overlay",
+            binaryMessenger: flutterViewController.engine.binaryMessenger
+        )
+
+        // Si flutter usa este canal, swift ejecutará esta parte de codigo directamente
+        channel.setMethodCallHandler { [weak self] call, result in  // weak es para limpiar recursos
+            guard let window = self else {
+                result(FlutterError(
+                    code: "NO_WINDOW",
+                    message: nil,
+                    details: nil
+                ))
+                return
+            }
+
+            switch call.method {
+            case "enableClickThrough":
+                window.ignoresMouseEvents = true
+                result(nil)
+            case "disableClickThrough":
+                window.ignoresMouseEvents = false
+                result(nil)
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+
+
+        self.isOpaque = false
+        self.backgroundColor = .clear
+        flutterViewController.backgroundColor = .clear
+
+        let windowFrame = self.frame
+
+        self.contentViewController = flutterViewController
+        self.setFrame(windowFrame, display: true)
+        RegisterGeneratedPlugins(registry: flutterViewController)
+        super.awakeFromNib()
+    }
+
+}

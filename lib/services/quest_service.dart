@@ -1,26 +1,35 @@
+import 'package:flutter/cupertino.dart';
+
 import '../models/quest.dart';
 
-class QuestService {
-  final List<Quest> quests = [];
+class QuestService extends ChangeNotifier {
+  final List<Quest> _quests = [];
+
+  List<Quest> get quests => _quests;
 
   void addQuest(Quest quest){
-    quests.add(quest);
+    _quests.add(quest);
+    notifyListeners();
   }
 
   void removeQuest(Quest quest){
-    if(quests.contains(quest)){
-      quests.remove(quest);
+    if(_quests.contains(quest)){
+      _quests.remove(quest);
+      notifyListeners();
     }
   }
 
-  void updateQuest(Quest quest, String newTitle, String newDescription){
-    if(!quests.contains(quest)){
-      return ; // TODO: Return error
+  void updateQuest(Quest quest, { String? newTitle, String? newDescription, bool changeCompletion = false,}) {
+    if (!_quests.contains(quest)) return;
+    if (newTitle != null) {
+      quest.setTitle(newTitle);
     }
-    Quest updatedQuest = Quest(
-      title: newTitle,
-      description: newDescription,
-      completed: quest.completed
-    );
+    if (newDescription != null) {
+      quest.setDescription(newDescription);
+    }
+    if (changeCompletion) {
+      quest.changeCompletion();
+    }
+    notifyListeners();
   }
 }

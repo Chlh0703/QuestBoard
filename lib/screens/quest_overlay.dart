@@ -5,15 +5,16 @@ import '../models/quest.dart';
 import '../widgets/quest_list.dart';
 import '../main.dart';
 import '../services/overlay_service.dart';
+import '../services/quest_service.dart';
 
 
 class QuestOverlay extends StatefulWidget { // Caso de stateful ya que hay dadas guardadas en esta "imagen" por la que esta imagen cambia segun x situacion
 
-  final List<Quest> quests;
+  final QuestService questService;
 
   const QuestOverlay({
     super.key,
-    required this.quests,
+    required this.questService,
   });
 
   @override
@@ -107,7 +108,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
 
                   const SizedBox(height: 20), // Una caja vacia para poner espacio
                   QuestList(
-                    quests: widget.quests,
+                    quests: widget.questService.quests,
                     onQuestTap: _toggleQuest,
                   ),
                 ],

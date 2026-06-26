@@ -1,77 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'screens/home_screen.dart';
+import 'services/quest_service.dart';
 import 'models/quest.dart';
-import 'screens/quest_overlay.dart';
-import 'services/hotkey_service.dart';
 import 'services/overlay_controller.dart';
 
+final questService = QuestService();
 final overlayController = OverlayController();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await windowManager.ensureInitialized();
-  await HotkeyService.initialize(
-    showOverlay: () { // Definir que showOverlay será X funcion
-      overlayController.show();
-    },
-  );
 
   const windowOptions = WindowOptions(
-    size: Size(350, 600),
+    size: Size(900, 650),
     center: true,
     title: "QuestBoard",
-    alwaysOnTop: true,
-    backgroundColor: Colors.transparent,
   );
 
   await windowManager.waitUntilReadyToShow(
     windowOptions,
         () async {
-      await windowManager.setAsFrameless();
       await windowManager.show();
       await windowManager.focus();
     },
   );
 
+  // Datos de prueba
+  questService.addQuest(
+    Quest(
+      title: "Acabar Benchmark",
+      description: "Ya va siendo hora",
+    ),
+  );
+
+  questService.addQuest(
+    Quest(
+      title: "Crear Overlay",
+      description: "Que es un overlay???",
+      completed: true,
+    ),
+  );
+
   runApp(
     QuestBoardApp(
-      quests: [
-        Quest(
-          title: "Acabar Benchmark",
-          description: "Ya va siendo hora",
-          completed: false,
-        ),
-        Quest(
-          title: "Crear Overlay",
-          description: "Que es un overlay???",
-          completed: true,
-        ),
-        Quest(
-          title: "Configurar Flutter",
-          description: ":)))",
-          completed: true,
-        ),
-      ],
+      questService: questService,
     ),
   );
 }
 
 class QuestBoardApp extends StatelessWidget {
-  final List<Quest> quests;
+  final QuestService questService;
 
   const QuestBoardApp({
     super.key,
-    required this.quests,
+    required this.questService,
   });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: QuestOverlay(
-        quests: quests,
+      home: HomeScreen(
+        questService: questService,
       ),
     );
   }

@@ -8,7 +8,7 @@ class Quest {
   Quest({
     required this._title,
     required this._description,
-    required this._completed,
+    this._completed = false,
   });
 
   String get title => _title;
