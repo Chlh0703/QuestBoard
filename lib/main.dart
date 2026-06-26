@@ -40,14 +40,17 @@ void main() async {
       quests: [
         Quest(
           title: "Acabar Benchmark",
+          description: "Ya va siendo hora",
           completed: false,
         ),
         Quest(
           title: "Crear Overlay",
-          completed: false,
+          description: "Que es un overlay???",
+          completed: true,
         ),
         Quest(
           title: "Configurar Flutter",
+          description: ":)))",
           completed: true,
         ),
       ],

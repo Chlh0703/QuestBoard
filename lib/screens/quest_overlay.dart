@@ -66,7 +66,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
 
   void _toggleQuest(Quest quest) {
     setState(() {
-      quest.completed = !quest.completed;
+      quest.changeCompletion();
     });
   }
 
