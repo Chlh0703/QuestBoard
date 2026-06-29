@@ -1,14 +1,20 @@
 import 'package:flutter/foundation.dart';
 
+import 'overlay_service.dart';
+
 class OverlayController extends ChangeNotifier { // Controllador de overlay
   bool visible = true;
-  void show() {
+
+  Future<void> show() async {
     visible = true;
+    await OverlayService.disableClickThrough();
     notifyListeners();
   }
 
-  void hide() {
+  Future<void> hide() async {
     visible = false;
+    print("intentando hiddear, ya ultimo");
+    await OverlayService.enableClickThrough();
     notifyListeners();
   }
 

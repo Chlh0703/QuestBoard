@@ -115,6 +115,37 @@ class MultiWindowManager: NSObject {
         let flutterViewController = FlutterViewController(project: project)
         if config.arguments.contains("\"overlay\"") {
             flutterViewController.backgroundColor = .clear
+
+            let overlayChannel = FlutterMethodChannel(
+                name: "questboard/overlay",
+                binaryMessenger: flutterViewController.engine.binaryMessenger
+            )
+
+            overlayChannel.setMethodCallHandler { [weak window] call, result in
+
+                guard let window = window else {
+                    result(FlutterError(
+                        code: "NO_WINDOW",
+                        message: "Window not found",
+                        details: nil
+                    ))
+                    return
+                }
+
+                switch call.method {
+
+                case "enableClickThrough":
+                    window.ignoresMouseEvents = true
+                    result(nil)
+
+                case "disableClickThrough":
+                    window.ignoresMouseEvents = false
+                    result(nil)
+
+                default:
+                    result(FlutterMethodNotImplemented)
+                }
+            }
         }
         window.contentViewController = flutterViewController
         window.acceptsMouseMovedEvents = true
