@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:quest_board/services/window_service.dart';
 import '../models/quest.dart';
 import '../widgets/overlay_quest_list.dart';
 import '../main.dart';

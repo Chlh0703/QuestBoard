@@ -38,7 +38,6 @@ class WindowService {
 
   static Future<void> hideOverlay() async {
     print(_overlayWindow);
-    print("intentando hiddear primer paso");
     await _overlayWindow?.invokeMethod("hideOverlay");
   }
 
@@ -51,7 +50,6 @@ class WindowService {
             overlayController.show();
             break;
           case "hideOverlay":
-            print("intentando hiddear segundo paso");
             overlayController.hide();
             break;
           default:

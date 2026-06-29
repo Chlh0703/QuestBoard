@@ -13,7 +13,6 @@ class OverlayController extends ChangeNotifier { // Controllador de overlay
 
   Future<void> hide() async {
     visible = false;
-    print("intentando hiddear, ya ultimo");
     await OverlayService.enableClickThrough();
     notifyListeners();
   }
