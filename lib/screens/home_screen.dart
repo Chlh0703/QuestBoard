@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              _showAddQuestDialog(context);
+              _showQuestDialog(context);
             },
             child: const Icon(Icons.add),
           ),
@@ -35,6 +35,12 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
               onQuestTap: (quest) {
                 questService.updateQuest(quest, changeCompletion: true);
               },
+              onQuestEdit: (quest) {
+                _showQuestDialog(context, quest: quest);
+              },
+              onQuestDelete: (quest) {
+                questService.removeQuest(quest);
+              },
             ),
           ),
         );
@@ -42,15 +48,15 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
     );
   }
 
-  void _showAddQuestDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
+  void _showQuestDialog(BuildContext context, {Quest? quest}) {
+    final titleController = TextEditingController(text: quest?.title ?? "",);
+    final descriptionController = TextEditingController(text: quest?.description ?? "",);
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("New Quest"),
+          title: Text(quest == null? "New Quest" : "Edit Quest"),
 
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -82,10 +88,15 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
 
             ElevatedButton(
               onPressed: () {
-                questService.addQuest(Quest(title: titleController.text, description: descriptionController.text));
+                if (quest == null) {
+                  questService.addQuest(Quest(title: titleController.text,
+                      description: descriptionController.text));
+                }else {
+                  questService.updateQuest(quest, newTitle: titleController.text, newDescription: descriptionController.text);
+                }
                 Navigator.pop(context);
               },
-              child: const Text("Create"),
+              child: Text(quest == null? "Create" : "Save"),
             ),
           ],
         );

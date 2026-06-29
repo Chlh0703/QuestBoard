@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import '../models/quest.dart';
-import '../widgets/quest_list.dart';
+import '../widgets/overlay_quest_list.dart';
 import '../main.dart';
 import '../services/overlay_service.dart';
 import '../services/quest_service.dart';
@@ -67,7 +67,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
 
   void _toggleQuest(Quest quest) {
     setState(() {
-      quest.changeCompletion();
+      questService.updateQuest(quest, changeCompletion: true);
     });
   }
 
@@ -107,7 +107,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
                   ),
 
                   const SizedBox(height: 20), // Una caja vacia para poner espacio
-                  QuestList(
+                  OverlayQuestList(
                     quests: widget.questService.quests,
                     onQuestTap: _toggleQuest,
                   ),

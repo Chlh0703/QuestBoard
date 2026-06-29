@@ -1,32 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 
-import 'screens/home_screen.dart';
+import 'apps/quest_board_app.dart';
+import 'apps/overlay_app.dart';
 import 'services/quest_service.dart';
 import 'models/quest.dart';
 import 'services/overlay_controller.dart';
+import 'services/window_service.dart';
+
 
 final questService = QuestService();
 final overlayController = OverlayController();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Get the current window controller
+  final windowController = await WindowController.fromCurrentEngine();
+  final args = windowController.arguments;
+  final isOverlay = args.contains("overlay");
 
-  await windowManager.ensureInitialized();
-
-  const windowOptions = WindowOptions(
-    size: Size(900, 650),
-    center: true,
-    title: "QuestBoard",
-  );
-
-  await windowManager.waitUntilReadyToShow(
-    windowOptions,
-        () async {
-      await windowManager.show();
-      await windowManager.focus();
-    },
-  );
+  if (!isOverlay) {
+    await WindowService.setupMainWindow();
+    await WindowService.createOverlayWindow();
+  }
 
   // Datos de prueba
   questService.addQuest(
@@ -45,27 +41,8 @@ void main() async {
   );
 
   runApp(
-    QuestBoardApp(
-      questService: questService,
-    ),
+    isOverlay
+        ? OverlayApp(questService: questService)
+        : QuestBoardApp(questService: questService),
   );
-}
-
-class QuestBoardApp extends StatelessWidget {
-  final QuestService questService;
-
-  const QuestBoardApp({
-    super.key,
-    required this.questService,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomeScreen(
-        questService: questService,
-      ),
-    );
-  }
 }
