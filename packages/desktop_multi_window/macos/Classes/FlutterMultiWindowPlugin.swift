@@ -117,10 +117,11 @@ class MultiWindowManager: NSObject {
             flutterViewController.backgroundColor = .clear
         }
         window.contentViewController = flutterViewController
+        window.acceptsMouseMovedEvents = true
         window.setFrame(overlayFrame(), display: true)
 
-        window.orderFront(nil)
-        window.setIsVisible(!config.hiddenAtLaunch)
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
 
         FlutterMultiWindowPlugin.onWindowCreatedCallback?(flutterViewController)
 

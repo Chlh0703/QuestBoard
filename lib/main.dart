@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 
-import 'apps/quest_board_app.dart';
-import 'apps/overlay_app.dart';
-import 'services/quest_service.dart';
 import 'models/quest.dart';
+import 'services/quest_service.dart';
 import 'services/overlay_controller.dart';
 import 'services/window_service.dart';
+import 'services/hotkey_service.dart';
+import 'apps/quest_board_app.dart';
+import 'apps/overlay_app.dart';
 
 
 final questService = QuestService();
@@ -20,6 +21,9 @@ void main() async {
   final isOverlay = args.contains("overlay");
 
   if (!isOverlay) {
+    await HotkeyService.initialize(
+      showOverlay: WindowService.showOverlay,
+    );
     await WindowService.setupMainWindow();
     await WindowService.createOverlayWindow();
   }
@@ -42,7 +46,7 @@ void main() async {
 
   runApp(
     isOverlay
-        ? OverlayApp(questService: questService)
+        ? OverlayApp(questService: questService, overlayController: overlayController)
         : QuestBoardApp(questService: questService),
   );
 }

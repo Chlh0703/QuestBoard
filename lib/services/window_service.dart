@@ -1,9 +1,15 @@
-import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:quest_board/services/overlay_service.dart';
+
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:window_manager/window_manager.dart';
+import 'overlay_controller.dart';
+
 
 class WindowService {
+
+  static WindowController? _overlayWindow;
+
   static Future<void> setupMainWindow() async {
     await windowManager.ensureInitialized();
     const windowOptions = WindowOptions(
@@ -21,16 +27,41 @@ class WindowService {
     );
   }
 
-  static Future<void> setupOverlayWindow() async {
-  }
-
   static Future<void> createOverlayWindow() async {
-    final overlay = await WindowController.create(
+    _overlayWindow = await WindowController.create(
       const WindowConfiguration(
         arguments: '{"window":"overlay"}',
       ),
     );
-    await overlay.show();
+    await _overlayWindow!.show();
   }
 
+  static Future<void> showOverlay() async {
+    await _overlayWindow?.invokeMethod(
+      "showOverlay",
+    );
+  }
+
+
+  static Future<void> initializeOverlayReceiver(OverlayController overlayController) async {
+    final controller = await WindowController.fromCurrentEngine();
+    await controller.setWindowMethodHandler(
+          (MethodCall call) async {
+        switch (call.method) {
+          case "showOverlay":
+            overlayController.show();
+            break;
+          case "hideOverlay":
+            overlayController.hide();
+            break;
+          case "toggleOverlay":
+            overlayController.toggle();
+            break;
+          default:
+            return null;
+        }
+        return null;
+      },
+    );
+  }
 }

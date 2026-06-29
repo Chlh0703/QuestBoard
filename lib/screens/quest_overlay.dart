@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../models/quest.dart';
 import '../widgets/overlay_quest_list.dart';
 import '../main.dart';
-import '../services/overlay_service.dart';
 import '../services/quest_service.dart';
 
 
@@ -35,15 +34,14 @@ class _QuestOverlayState extends State<QuestOverlay> {
   @override
   void initState() {
     super.initState();
+    _startHideTimer();
 
     _overlayListener = () async {
       if (overlayController.visible) {
         print("He escuchado que se ha encendido");
         _startHideTimer(); // al escuchar que se ha activado, inicia timer tambien
-        await OverlayService.disableClickThrough();
       } else if (!overlayController.visible) {
         print("He escuchado que se ha ido");
-        await OverlayService.enableClickThrough();
       }
       setState(() {}); // Reset de estado
     };
@@ -52,7 +50,8 @@ class _QuestOverlayState extends State<QuestOverlay> {
   }
 
   void _startHideTimer() {
-    _hideTimer?.cancel(); // Cancela lo pendiente del timer, basicamente un reset
+    print("empezando a contar");
+    _hideTimer?.cancel(); // Cancela lo pendiente del timer
     _hideTimer = Timer( // Aqui es donde define cuanto dura y que hace
       const Duration(seconds: 3),
           () async {
@@ -62,6 +61,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
   }
 
   void _cancelHideTimer() {
+    print("cancelando el contador");
     _hideTimer?.cancel();
   }
 
@@ -81,39 +81,41 @@ class _QuestOverlayState extends State<QuestOverlay> {
   Widget build(BuildContext context) {
     return Scaffold( // Scaffold es la estructura básica de una pantalla Material Design.
       backgroundColor: Colors.transparent,
-      body: MouseRegion( // Un widget que detecta las actividades del ratón dentro de la zona de interfaz (region)
-        onEnter: (_) => _cancelHideTimer(), // Dada X situacion que hacer
-        onExit: (_) => _startHideTimer(),
-        child: SafeArea( // Es un widget que evita que tu contenido quede debajo de zonas peligrosas del sistema operativo.
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Container(
+      body: Listener(
+        child: MouseRegion(
+          onEnter: (_) => _cancelHideTimer(),
+          onExit: (_) => _startHideTimer(),
+          child: SafeArea( // Es un widget que evita que tu contenido quede debajo de zonas peligrosas del sistema operativo.
+            child: Padding(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: overlayController.visible ? Colors.grey.withValues(alpha: 0.55) : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: overlayController.visible ? Colors.grey.withValues(alpha: 0.55) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
 
-              child: overlayController.visible ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "QUEST BOARD",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+                child: overlayController.visible ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "QUEST BOARD",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20), // Una caja vacia para poner espacio
-                  OverlayQuestList(
-                    quests: widget.questService.quests,
-                    onQuestTap: _toggleQuest,
-                  ),
-                ],
-              )
-                  : const SizedBox.shrink(),
+                    const SizedBox(height: 20), // Una caja vacia para poner espacio
+                    OverlayQuestList(
+                      quests: widget.questService.quests,
+                      onQuestTap: _toggleQuest,
+                    ),
+                  ],
+                )
+                    : const SizedBox.shrink(),
+              ),
             ),
           ),
         ),

@@ -16,4 +16,5 @@ class OverlayController extends ChangeNotifier { // Controllador de overlay
     visible = !visible;
     notifyListeners();
   }
+
 }
