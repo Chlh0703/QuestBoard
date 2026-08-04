@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/quest.dart';
+import '../models/quest_model.dart';
 import '../widgets/quest_list.dart';
 import '../services/quest_service.dart';
 
@@ -48,7 +48,7 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
     );
   }
 
-  void _showQuestDialog(BuildContext context, {Quest? quest}) {
+  void _showQuestDialog(BuildContext context, {QuestModel? quest}) {
     final titleController = TextEditingController(text: quest?.title ?? "",);
     final descriptionController = TextEditingController(text: quest?.description ?? "",);
 
@@ -89,7 +89,7 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
             ElevatedButton(
               onPressed: () {
                 if (quest == null) {
-                  questService.addQuest(Quest(title: titleController.text,
+                  questService.addQuest(QuestModel(title: titleController.text,
                       description: descriptionController.text));
                 }else {
                   questService.updateQuest(quest, newTitle: titleController.text, newDescription: descriptionController.text);

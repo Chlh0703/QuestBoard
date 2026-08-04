@@ -1,10 +1,10 @@
 // Este doc describe una classe, en este caso Quest
+import 'package:hive_flutter/hive_flutter.dart';
 
-import 'dart:convert';
-import 'package:hive/hive.dart';
+part 'quest_model.g.dart';
 
 @HiveType(typeId: 1)
-class Quest extends HiveObject {
+class QuestModel extends HiveObject {
 
   @HiveField(0)
   String _title;
@@ -15,11 +15,12 @@ class Quest extends HiveObject {
   @HiveField(2)
   bool _completed;
 
-  Quest({
+  QuestModel({
     required this._title,
     required this._description,
     this._completed = false,
   });
+
 
   String get title => _title;
   String get description => _description;
@@ -36,35 +37,4 @@ class Quest extends HiveObject {
   void changeCompletion(){
     _completed = !_completed;
   }
-
-}
-
-
-  String language;
-
-  @HiveField(1)
-  String examName;
-
-  @HiveField(2)
-  int examId;
-
-  @HiveField(3)
-  Profile profile;
-
-  @HiveField(4)
-  ListExam listexam;
-
-  @override
-  String toString() {
-    return jsonEncode({
-      'language': this.language,
-      'examName': this.examName,
-      'examId': this.examId,
-      'profile': this.profile,
-      'listexam': this.listexam
-    });
-  }
-
-  PersonModel(
-      this.language, this.examName, this.examId, this.profile, this.listexam);
 }

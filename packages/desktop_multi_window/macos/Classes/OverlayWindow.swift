@@ -1,5 +1,7 @@
 import Cocoa
 
+// donde termina y donde hago yo
+
 class OverlayWindow: CustomWindow {
 
     override init(configuration: WindowConfiguration) {

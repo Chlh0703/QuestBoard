@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-import 'models/quest.dart';
+import 'models/quest_model.dart';
 import 'services/quest_service.dart';
 import 'services/overlay_controller.dart';
 import 'services/window_service.dart';
@@ -10,15 +12,23 @@ import 'apps/quest_board_app.dart';
 import 'apps/overlay_app.dart';
 
 
-final questService = QuestService();
+late final QuestService questService; // Late es basicamente un "prometo que tendrá valor" xD
 final overlayController = OverlayController();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+  Hive.registerAdapter(QuestModelAdapter());
+  await Hive.openBox<QuestModel>("quests");
+
+  questService = QuestService();
+
   // Get the current window controller
   final windowController = await WindowController.fromCurrentEngine();
   final args = windowController.arguments;
   final isOverlay = args.contains("overlay");
+
 
   if (!isOverlay) {
     await HotkeyService.initialize(
@@ -27,22 +37,6 @@ void main() async {
     await WindowService.setupMainWindow();
     await WindowService.createOverlayWindow();
   }
-
-  // Datos de prueba
-  questService.addQuest(
-    Quest(
-      title: "Acabar Benchmark",
-      description: "Ya va siendo hora",
-    ),
-  );
-
-  questService.addQuest(
-    Quest(
-      title: "Crear Overlay",
-      description: "Que es un overlay???",
-      completed: true,
-    ),
-  );
 
   runApp(
     isOverlay

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../models/quest.dart';
+import '../models/quest_model.dart';
 import '../widgets/overlay_quest_list.dart';
 import '../main.dart';
 import '../services/quest_service.dart';
@@ -65,7 +65,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
     _hideTimer?.cancel();
   }
 
-  void _toggleQuest(Quest quest) {
+  void _toggleQuest(QuestModel quest) {
     setState(() {
       questService.updateQuest(quest, changeCompletion: true);
     });

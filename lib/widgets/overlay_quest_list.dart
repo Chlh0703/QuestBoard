@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/quest.dart';
+import '../models/quest_model.dart';
 import 'overlay_quest_card.dart';
 
 class OverlayQuestList extends StatelessWidget { // Stateless widget: dadas no se guardan aqui esto es escencialmente una "imagen"
-  final Function(Quest) onQuestTap;
+  final Function(QuestModel) onQuestTap;
 
-  final List<Quest> quests;
+  final List<QuestModel> quests;
 
   const OverlayQuestList({
     super.key, // La "id" de esta classe

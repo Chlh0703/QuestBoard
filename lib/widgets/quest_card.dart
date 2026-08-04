@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../models/quest.dart';
+import '../models/quest_model.dart';
 
 class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui no se guardan datos, si se guardaran seria stateful
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  final Quest quest;
+  final QuestModel quest;
   const QuestCard({
     super.key, // Todos tienen una key, eso es para identificar, de alguna forma es parecido a una biblioteca
     required this.quest,

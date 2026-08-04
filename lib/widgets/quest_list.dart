@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../models/quest.dart';
+import '../models/quest_model.dart';
 import 'quest_card.dart';
 
 class QuestList extends StatelessWidget { // Stateless widget: dadas no se guardan aqui esto es escencialmente una "imagen"
-  final Function(Quest) onQuestTap;
-  final Function(Quest) onQuestEdit;
-  final Function(Quest) onQuestDelete;
+  final Function(QuestModel) onQuestTap;
+  final Function(QuestModel) onQuestEdit;
+  final Function(QuestModel) onQuestDelete;
 
-  final List<Quest> quests;
+  final List<QuestModel> quests;
 
   const QuestList({
     super.key, // La "id" de esta classe
