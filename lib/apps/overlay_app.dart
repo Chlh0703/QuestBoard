@@ -3,16 +3,16 @@ import 'package:quest_board/services/quest_service.dart';
 
 import '../screens/quest_overlay.dart';
 import '../services/overlay_controller.dart';
-import '../services/window_service.dart';
+import '../services/overlay_quest_service.dart';
 
 class OverlayApp extends StatefulWidget {
 
-  final QuestService questService;
+  final OverlayQuestService overlayQuestService;
   final OverlayController overlayController;
 
   const OverlayApp({
     super.key,
-    required this.questService,
+    required this.overlayQuestService,
     required this.overlayController,
   });
 
@@ -21,20 +21,13 @@ class OverlayApp extends StatefulWidget {
 }
 
 class _OverlayAppState extends State<OverlayApp> {
-
-  @override
-  void initState() {
-    super.initState();
-
-    WindowService.initializeOverlayReceiver(widget.overlayController);
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: QuestOverlay(
-        questService: widget.questService,
+        overlayQuestService: widget.overlayQuestService,
+        overlayController: widget.overlayController,
       ),
     );
   }

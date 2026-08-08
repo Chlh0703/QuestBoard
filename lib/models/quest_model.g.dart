@@ -17,21 +17,24 @@ class QuestModelAdapter extends TypeAdapter<QuestModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return QuestModel(
-      title: fields[0] as String,
-      description: fields[1] as String,
-      completed: fields[2] as bool
+      id: fields[0] as String?,
+      title: fields[1] as String,
+      description: fields[2] as String,
+      completed: fields[3] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, QuestModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
-      ..write(obj._title)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj._description)
+      ..write(obj._title)
       ..writeByte(2)
+      ..write(obj._description)
+      ..writeByte(3)
       ..write(obj._completed);
   }
 

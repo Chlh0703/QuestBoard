@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
             child: QuestList(
               quests: questService.quests,
               onQuestTap: (quest) {
-                questService.updateQuest(quest, changeCompletion: true);
+                questService.updateQuest(quest.id, changeCompletion: true);
               },
               onQuestEdit: (quest) {
                 _showQuestDialog(context, quest: quest);
@@ -92,7 +92,7 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
                   questService.addQuest(QuestModel(title: titleController.text,
                       description: descriptionController.text));
                 }else {
-                  questService.updateQuest(quest, newTitle: titleController.text, newDescription: descriptionController.text);
+                  questService.updateQuest(quest.id, newTitle: titleController.text, newDescription: descriptionController.text);
                 }
                 Navigator.pop(context);
               },

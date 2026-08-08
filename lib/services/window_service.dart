@@ -1,13 +1,14 @@
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:quest_board/services/quest_service.dart';
 import 'package:window_manager/window_manager.dart';
+import '../models/quest_model.dart';
 import 'overlay_controller.dart';
+import 'overlay_quest_service.dart';
 
 
 class WindowService {
-
   static WindowController? _overlayWindow;
 
   static Future<void> setupMainWindow() async {
@@ -37,11 +38,39 @@ class WindowService {
   }
 
   static Future<void> hideOverlay() async {
-    print(_overlayWindow);
     await _overlayWindow?.invokeMethod("hideOverlay");
   }
 
-  static Future<void> initializeOverlayReceiver(OverlayController overlayController) async {
+
+  static Future<void> initializeMainReceiver(QuestService questService) async {
+    final controller = await WindowController.fromCurrentEngine();
+    await controller.setWindowMethodHandler(
+          (MethodCall call) async {
+        switch (call.method) {
+          case "toggleQuest":
+            final quest = QuestModel.fromMap(
+              Map<String, dynamic>.from(call.arguments),
+            );
+            await questService.updateQuest(quest.id, changeCompletion: true);
+            break;
+          case "createQuest":
+            print("creating quest in main");
+            break;
+          case "updateQuest":
+            print("updating quest in main");
+            break;
+          case "deleteQuest":
+            print("deleting quest in main");
+            break;
+          default:
+            return null;
+        }
+        return null;
+      },
+    );
+  }
+
+  static Future<void> initializeOverlayReceiver(OverlayController overlayController, OverlayQuestService overlayQuestService,) async {
     final controller = await WindowController.fromCurrentEngine();
     await controller.setWindowMethodHandler(
           (MethodCall call) async {
@@ -52,6 +81,16 @@ class WindowService {
           case "hideOverlay":
             overlayController.hide();
             break;
+          case "questsChanged":
+            final data = call.arguments as List;
+            final quests = data
+                .cast<Map>()
+                .map((e) => QuestModel.fromMap(
+              Map<String, dynamic>.from(e),
+            ))
+                .toList();
+            overlayQuestService.replaceAll(quests);
+            break;
           default:
             return null;
         }
@@ -59,4 +98,35 @@ class WindowService {
       },
     );
   }
+
+  static Future<void> sendToMain(
+      String method,
+      dynamic arguments,
+      ) async {
+    final windows = await WindowController.getAll();
+
+    for (final window in windows) {
+      if (!window.arguments.contains("overlay")) {
+        await window.invokeMethod(
+          method,
+          arguments,
+        );
+        break;
+      }
+    }
+  }
+
+  static Future<void> sendQuestsToOverlay(
+      List<QuestModel> quests,
+      ) async {
+    final data = quests
+        .map((q) => q.toMap())
+        .toList();
+
+    await _overlayWindow?.invokeMethod(
+      "questsChanged",
+      data,
+    );
+  }
+
 }

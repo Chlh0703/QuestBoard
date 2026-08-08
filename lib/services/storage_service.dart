@@ -8,8 +8,10 @@ class StorageService {
 
   Box<QuestModel> get _box => Hive.box<QuestModel>(_boxName);
 
-  List<QuestModel> loadQuests() {
-    return _box.values.toList();
+  Future<List<QuestModel>> loadQuests() async {
+    await _box.close();
+    final box = await Hive.openBox<QuestModel>(_boxName);
+    return box.values.toList();
   }
 
   Future<void> saveQuests(List<QuestModel> quests) async {
