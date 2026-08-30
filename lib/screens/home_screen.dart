@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:quest_board/services/player_service.dart';
 import '../models/quest_model.dart';
+import '../widgets/player_stats.dart';
 import '../widgets/quest_list.dart';
 import '../services/quest_service.dart';
 
 class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guardan aqui esto es escencialmente una "imagen"
   final QuestService questService;
+  final PlayerService playerService;
 
   const HomeScreen({
     super.key, // La "id" de esta classe
     required this.questService,
+    required this.playerService
   });
 
   @override
@@ -28,20 +32,50 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
             },
             child: const Icon(Icons.add),
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: QuestList(
-              quests: questService.quests,
-              onQuestTap: (quest) {
-                questService.updateQuest(quest.id, changeCompletion: true);
-              },
-              onQuestEdit: (quest) {
-                _showQuestDialog(context, quest: quest);
-              },
-              onQuestDelete: (quest) {
-                questService.removeQuest(quest);
-              },
-            ),
+          body: Row(
+            children: [
+              // Player information TODO:Get from hive
+              Expanded(
+                flex: 3,
+                child: Builder(
+                  builder: (context) {
+                    final player = playerService.player;
+                    return PlayerStats(
+                      level: player.level,
+                      experience: player.experience,
+                      currentHealth: player.currentHealth,
+                      maxHealth: player.maxHealth,
+                    );
+                  },
+                ),
+              ),
+
+              // Quests
+              Expanded(
+                flex: 7,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: QuestList(
+                    quests: questService.quests,
+                    onQuestTap: (quest) {
+                      questService.updateQuest(
+                        quest.id,
+                        changeCompletion: true,
+                      );
+                    },
+                    onQuestEdit: (quest) {
+                      _showQuestDialog(
+                        context,
+                        quest: quest,
+                      );
+                    },
+                    onQuestDelete: (quest) {
+                      questService.removeQuest(quest);
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },

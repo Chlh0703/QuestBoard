@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:quest_board/models/player_model.dart';
 import 'package:quest_board/services/overlay_quest_service.dart';
+import 'package:quest_board/services/player_service.dart';
+import 'package:quest_board/services/storage_service.dart';
 
 import 'models/quest_model.dart';
 import 'services/quest_service.dart';
@@ -14,6 +16,7 @@ import 'apps/overlay_app.dart';
 
 
 late final QuestService questService; // Late es basicamente un "prometo que tendrá valor" xD
+late final PlayerService playerService;
 late final OverlayQuestService overlayQuestService;
 final overlayController = OverlayController();
 
@@ -22,11 +25,15 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(QuestModelAdapter());
-  await Hive.openBox<QuestModel>("quests");
+  Hive.registerAdapter(PlayerModelAdapter());
+  await Hive.openBox<QuestModel>(StorageService.questBoxName);
+  await Hive.openBox<PlayerModel>(StorageService.playerBoxName);
+
+  playerService = PlayerService();
+  await playerService.initialize();
 
   questService = QuestService();
   await questService.initialize();
-  print("inside main $questService.quests");
   overlayQuestService = OverlayQuestService(questService.quests);
 
   // Get the current window controller
@@ -52,6 +59,6 @@ void main() async {
   runApp(
     isOverlay
         ? OverlayApp(overlayQuestService: overlayQuestService, overlayController: overlayController)
-        : QuestBoardApp(questService: questService),
+        : QuestBoardApp(questService: questService, playerService: playerService,),
   );
 }

@@ -6,9 +6,7 @@ class OverlayQuestService extends ChangeNotifier {
   final List<QuestModel> _quests = [];
 
   OverlayQuestService(List<QuestModel> quests) {
-    print("inside init overlay quest service $quests");
     replaceAll(quests);
-    print("inside init overlay quest service 2 $_quests");
   }
 
   List<QuestModel> get quests => List.unmodifiable(_quests);
