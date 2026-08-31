@@ -41,102 +41,104 @@ class PlayerStats extends StatelessWidget {
           ),
         ),
       ),
-      child: Column(
-        children: [
-          // Avatar
-          const CircleAvatar(
-            radius: 35,
-            child: Icon(
-              Icons.person,
-              size: 40,
+      child: Align(
+        alignment: const Alignment(0, -0.35),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Avatar
+            const CircleAvatar(
+              radius: 70,
+              child: Icon(
+                Icons.person,
+                size: 100,
+              ),
             ),
-          ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-          // Level
-          Row(
-            children: [
-              const Text(
-                'LV',
+            // Level
+            Row(
+              children: [
+                const Text(
+                  'LV',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '$level',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // EXP
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'EXP',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Spacer(),
-              Text(
-                '$level',
-                style: const TextStyle(
-                  fontSize: 24,
+            ),
+
+            const SizedBox(height: 6),
+
+            LinearProgressIndicator(
+              value: expProgress,
+              minHeight: 10,
+            ),
+
+            const SizedBox(height: 5),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '$experience / $maxExperience',
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // HP
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'HP',
+                style: TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            ],
-          ),
+            ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 6),
 
-          // EXP
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'EXP',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            LinearProgressIndicator(
+              value: healthProgress,
+              minHeight: 10,
+            ),
+
+            const SizedBox(height: 5),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '$currentHealth / $maxHealth',
               ),
             ),
-          ),
-
-          const SizedBox(height: 6),
-
-          LinearProgressIndicator(
-            value: expProgress,
-            minHeight: 10,
-          ),
-
-          const SizedBox(height: 5),
-
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '$experience / $maxExperience',
-            ),
-          ),
-
-          const SizedBox(height: 25),
-
-          // HP
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'HP',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          LinearProgressIndicator(
-            value: healthProgress,
-            minHeight: 10,
-          ),
-
-          const SizedBox(height: 5),
-
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '$currentHealth / $maxHealth',
-            ),
-          ),
-
-          const Spacer(),
-        ],
+          ],
+        ),
       ),
     );
   }

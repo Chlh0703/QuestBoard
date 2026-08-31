@@ -6,6 +6,7 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onArchive;
 
   final QuestModel quest;
   const QuestCard({
@@ -14,51 +15,74 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
     required this.onTap,
     required this.onEdit,
     required this.onDelete,
+    required this.onArchive,
   });
 
   @override
   Widget build(BuildContext context) {  // Build es basicamente decir como se tiene que construir la classe
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8), // Padding: espacio, child: hijo, dado este espacio poner este hijo
-      child: GestureDetector( // Deteccion de tap
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Parte de la quest que responde al onTap
+          GestureDetector(
+            onTap: onTap,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  quest.completed
-                      ? "■ ${quest.title}"
-                      : "□ ${quest.title}",
-                  style: TextStyle(
-                    color:
-                    quest.completed ? Colors.green : Colors.white,
+                Row(
+                  children: [
+                    Text(
+                      quest.completed
+                          ? "■ ${quest.title}"
+                          : "□ ${quest.title}",
+                      style: TextStyle(
+                        color: quest.completed
+                            ? Colors.green
+                            : Colors.white,
+                        decoration: quest.completed
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit),
+                    ),
+                    IconButton(
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete),
+                    ),
+                  ],
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: Text(
+                    quest.description,
+                    style: TextStyle(
+                      color: quest.completed
+                          ? Colors.green
+                          : Colors.white,
+                      decoration: quest.completed
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
                   ),
                 ),
-                const Spacer(),
-                IconButton(
-                  onPressed: onEdit,
-                  icon: const Icon(Icons.edit),
-                ),
-                IconButton(
-                  onPressed: onDelete,
-                  icon: const Icon(Icons.delete),
-                )
-              ]
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(left:20),
-              child: Text(
-                quest.description,
-                style: TextStyle(
-                  color:
-                  quest.completed ? Colors.green : Colors.white,
-                )
-              ),
-            )
-          ]
-        ),
+          ),
+
+          // Botones FUERA del GestureDetector
+          if(quest.completed)
+              ElevatedButton(
+            onPressed: onArchive,
+            child: const Text('Archivar'),
+          ),
+        ],
       ),
     );
   }

@@ -23,11 +23,13 @@ class QuestList extends StatelessWidget { // Stateless widget: dadas no se guard
       crossAxisAlignment: CrossAxisAlignment.start, // El axis, en este caso pegado a la izquierda
       children:
         quests.map((quest) => QuestCard(
-        quest: quest,
-        onTap: () => onQuestTap(quest),
-        onEdit: () => onQuestEdit(quest),
-        onDelete: () => onQuestDelete(quest),))
-            .toList(),
+          quest: quest,
+          onTap: () => onQuestTap(quest),
+          onEdit: () => onQuestEdit(quest),
+          onDelete: () => onQuestDelete(quest),
+          onArchive: () {print("archiving");},
+        )).toList(),
+
     );
   }
 }

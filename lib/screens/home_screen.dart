@@ -22,10 +22,6 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
       builder: (context, child) {
         return Scaffold(
           backgroundColor: Colors.grey,
-          appBar: AppBar(
-            backgroundColor: Colors.grey,
-            title: const Text("QuestBoard"),
-          ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               _showQuestDialog(context);
@@ -34,12 +30,12 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
           ),
           body: Row(
             children: [
-              // Player information TODO:Get from hive
               Expanded(
                 flex: 3,
                 child: Builder(
                   builder: (context) {
                     final player = playerService.player;
+
                     return PlayerStats(
                       level: player.level,
                       experience: player.experience,
@@ -55,23 +51,40 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
                 flex: 7,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: QuestList(
-                    quests: questService.quests,
-                    onQuestTap: (quest) {
-                      questService.updateQuest(
-                        quest.id,
-                        changeCompletion: true,
-                      );
-                    },
-                    onQuestEdit: (quest) {
-                      _showQuestDialog(
-                        context,
-                        quest: quest,
-                      );
-                    },
-                    onQuestDelete: (quest) {
-                      questService.removeQuest(quest);
-                    },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Align(
+                        alignment: Alignment.center,
+                        child:  Text(
+                          'QUESTS',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(child:
+                        QuestList(
+                          quests: questService.quests,
+                          onQuestTap: (quest) {
+                            questService.updateQuest(
+                              quest.id,
+                              changeCompletion: true,
+                            );
+                          },
+                          onQuestEdit: (quest) {
+                            _showQuestDialog(
+                              context,
+                              quest: quest,
+                            );
+                          },
+                          onQuestDelete: (quest) {
+                            questService.removeQuest(quest);
+                          },
+                        )
+                      )
+                    ],
                   ),
                 ),
               ),
