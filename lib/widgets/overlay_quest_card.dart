@@ -32,10 +32,10 @@ class OverlayQuestCard extends StatelessWidget { // La gracia de stateless esque
             Padding(
               padding: const EdgeInsets.only(left:20),
               child: Text(
-                quest.description,
+                  "REWARD: ${quest.experienceReward} EXP",
                 style: TextStyle(
-                  color:
-                  quest.completed ? Colors.green : Colors.white,
+                  color: quest.completed ? Colors.green : Colors.white,
+                  decoration: quest.completed ? TextDecoration.lineThrough : TextDecoration.none,
                 )
               ),
             )

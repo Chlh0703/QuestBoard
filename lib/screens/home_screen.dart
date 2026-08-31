@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:quest_board/services/player_service.dart';
 import '../models/quest_model.dart';
 import '../widgets/player_stats.dart';
@@ -97,7 +98,7 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
 
   void _showQuestDialog(BuildContext context, {QuestModel? quest}) {
     final titleController = TextEditingController(text: quest?.title ?? "",);
-    final descriptionController = TextEditingController(text: quest?.description ?? "",);
+    final experienceController = TextEditingController(text: quest?.experienceReward.toString() ?? "",);
 
     showDialog(
       context: context,
@@ -118,11 +119,15 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
               const SizedBox(height: 16),
 
               TextField(
-                controller: descriptionController,
+                controller: experienceController,
                 decoration: const InputDecoration(
-                  labelText: "Description",
+                  labelText: "Experience",
+                  hintText: "1 - 1000",
                 ),
-                maxLines: 3,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
               ),
             ],
           ),
@@ -135,11 +140,22 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
 
             ElevatedButton(
               onPressed: () {
+                final experience = int.tryParse(experienceController.text) ?? 0;
+                if (experience == null || experience < 1 || experience > 1000) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Experience must be between 1 and 1000.',
+                      ),
+                    ),
+                  );
+                  return;
+                }
                 if (quest == null) {
                   questService.addQuest(QuestModel(title: titleController.text,
-                      description: descriptionController.text));
+                      experienceReward: experience));
                 }else {
-                  questService.updateQuest(quest.id, newTitle: titleController.text, newDescription: descriptionController.text);
+                  questService.updateQuest(quest.id, newTitle: titleController.text, newExpReward: experience);
                 }
                 Navigator.pop(context);
               },

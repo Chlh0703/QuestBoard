@@ -27,7 +27,7 @@ class QuestList extends StatelessWidget { // Stateless widget: dadas no se guard
           onTap: () => onQuestTap(quest),
           onEdit: () => onQuestEdit(quest),
           onDelete: () => onQuestDelete(quest),
-          onArchive: () {print("archiving");},
+          onArchive: () { print("archiving");},
         )).toList(),
 
     );

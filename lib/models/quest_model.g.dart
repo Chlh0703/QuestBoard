@@ -19,8 +19,8 @@ class QuestModelAdapter extends TypeAdapter<QuestModel> {
     return QuestModel(
       id: fields[0] as String?,
       title: fields[1] as String,
-      description: fields[2] as String,
-      completed: fields[3] as bool,
+      completed: fields[2] as bool,
+      experienceReward: fields[3] as int,
     );
   }
 
@@ -33,9 +33,9 @@ class QuestModelAdapter extends TypeAdapter<QuestModel> {
       ..writeByte(1)
       ..write(obj._title)
       ..writeByte(2)
-      ..write(obj._description)
+      ..write(obj._completed)
       ..writeByte(3)
-      ..write(obj._completed);
+      ..write(obj._experienceReward);
   }
 
   @override

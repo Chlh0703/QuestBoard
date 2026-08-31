@@ -39,4 +39,18 @@ class StorageService {
     await _playerBox.put('player', player);
   }
 
+  Future<void> clearDatabase() async {
+    if (Hive.isBoxOpen(questBoxName)) {
+      await Hive.box<QuestModel>(questBoxName).close();
+    }
+
+    if (Hive.isBoxOpen(playerBoxName)) {
+      await Hive.box(playerBoxName).close();
+    }
+
+    await Hive.deleteBoxFromDisk(questBoxName);
+    await Hive.deleteBoxFromDisk(playerBoxName);
+
+  }
+
 }

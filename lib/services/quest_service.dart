@@ -44,7 +44,7 @@ class QuestService extends ChangeNotifier {
     }
   }
 
-  Future<void> updateQuest(String questId, { String? newTitle, String? newDescription, bool changeCompletion = false,}) async {
+  Future<void> updateQuest(String questId, { String? newTitle, int? newExpReward, bool changeCompletion = false,}) async {
     final quest = _quests.cast<QuestModel?>().firstWhere(
           (q) => q?.id == questId,
       orElse: () => null,
@@ -57,8 +57,8 @@ class QuestService extends ChangeNotifier {
     if (newTitle != null) {
       quest.setTitle(newTitle);
     }
-    if (newDescription != null) {
-      quest.setDescription(newDescription);
+    if (newExpReward != null) {
+      quest.setExperienceReward(newExpReward);
     }
     if (changeCompletion) {
       quest.changeCompletion();

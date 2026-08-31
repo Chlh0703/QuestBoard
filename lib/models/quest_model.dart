@@ -14,52 +14,49 @@ class QuestModel extends HiveObject {
   String _title;
 
   @HiveField(2)
-  String _description;
+  bool _completed;
 
   @HiveField(3)
-  bool _completed;
+  int _experienceReward;
 
   QuestModel({
     String? id,
     required this._title,
-    required this._description,
+    required this._experienceReward,
     this._completed = false,
-  })  : id = id ?? const Uuid().v4();
-
+  }) : id = id ?? const Uuid().v4();
 
   String get title => _title;
-  String get description => _description;
   bool get completed => _completed;
+  int get experienceReward => _experienceReward;
 
   void setTitle(String newTitle) {
     _title = newTitle;
   }
 
-  void setDescription(String newDescription) {
-    _description = newDescription;
+  void setExperienceReward(int newExperienceReward) {
+    _experienceReward = newExperienceReward;
   }
 
-  void changeCompletion(){
+  void changeCompletion() {
     _completed = !_completed;
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      "title": _title,
-      "description": _description,
-      "completed": _completed,
+      'title': _title,
+      'completed': _completed,
+      'experienceReward': _experienceReward,
     };
   }
 
   factory QuestModel.fromMap(Map<String, dynamic> map) {
     return QuestModel(
       id: map['id'],
-      title: map["title"],
-      description: map["description"],
-      completed: map["completed"],
+      title: map['title'],
+      experienceReward: map['experienceReward'],
+      completed: map['completed'],
     );
   }
 }
-
-
