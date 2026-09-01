@@ -25,8 +25,8 @@ class OverlayQuestCard extends StatelessWidget { // La gracia de stateless esque
                   ? "■ ${quest.title}"
                   : "□ ${quest.title}",
               style: TextStyle(
-                color:
-                quest.completed ? Colors.green : Colors.white,
+                color: quest.completed ? Colors.green : Colors.white,
+                decoration: quest.completed ? TextDecoration.lineThrough  : TextDecoration.none,
               ),
             ),
             Padding(

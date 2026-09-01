@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/window_service.dart';
 
 import '../services/storage_service.dart';
@@ -6,7 +7,10 @@ import '../models/quest_model.dart';
 
 class QuestService extends ChangeNotifier {
   final StorageService _storage = StorageService();
+  final PlayerService _playerService;
   final List<QuestModel> _quests = [];
+
+  QuestService(this._playerService);
 
   List<QuestModel> get quests => List.unmodifiable(_quests);
 
@@ -62,6 +66,11 @@ class QuestService extends ChangeNotifier {
     }
     if (changeCompletion) {
       quest.changeCompletion();
+      if (quest.completed) {
+        _playerService.addExperience(quest.experienceReward);
+      } else {
+        _playerService.addExperience( - quest.experienceReward);
+      }
     }
     await _saveAndSync();
   }

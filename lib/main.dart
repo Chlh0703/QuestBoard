@@ -32,7 +32,7 @@ void main() async {
   playerService = PlayerService();
   await playerService.initialize();
 
-  questService = QuestService();
+  questService = QuestService(playerService);
   await questService.initialize();
   overlayQuestService = OverlayQuestService(questService.quests);
 

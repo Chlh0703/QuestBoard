@@ -1,34 +1,26 @@
 import 'package:flutter/material.dart';
 
+import '../models/player_model.dart';
+
 class PlayerStats extends StatelessWidget {
-  final int level;
-  final int experience;
-  final int currentHealth;
-  final int maxHealth;
+  final PlayerModel player;
 
   const PlayerStats({
     super.key,
-    required this.level,
-    required this.experience,
-    required this.currentHealth,
-    required this.maxHealth,
+    required this.player,
   });
 
-  static int experienceRequiredForNextLevel(int level) {
-    return 100 + (level - 1) * 50;
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { //TODO
     final maxExperience =
-    experienceRequiredForNextLevel(level);
+    player.experienceRequiredForNextLevel();
 
     final expProgress = maxExperience > 0
-        ? (experience / maxExperience).clamp(0.0, 1.0)
+        ? (player.experience / maxExperience).clamp(0.0, 1.0)
         : 0.0;
 
-    final healthProgress = maxHealth > 0
-        ? (currentHealth / maxHealth).clamp(0.0, 1.0)
+    final healthProgress = player.maxHealth > 0
+        ? (player.currentHealth / player.maxHealth).clamp(0.0, 1.0)
         : 0.0;
 
     return Container(
@@ -69,7 +61,7 @@ class PlayerStats extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '$level',
+                  '${player.level}',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -104,7 +96,7 @@ class PlayerStats extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                '$experience / $maxExperience',
+                '${player.experience} / $maxExperience',
               ),
             ),
 
@@ -134,7 +126,7 @@ class PlayerStats extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                '$currentHealth / $maxHealth',
+                '${player.currentHealth} / ${player.maxHealth}',
               ),
             ),
           ],

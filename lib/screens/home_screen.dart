@@ -35,13 +35,8 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
                 flex: 3,
                 child: Builder(
                   builder: (context) {
-                    final player = playerService.player;
-
                     return PlayerStats(
-                      level: player.level,
-                      experience: player.experience,
-                      currentHealth: player.currentHealth,
-                      maxHealth: player.maxHealth,
+                      player: playerService.player,
                     );
                   },
                 ),
