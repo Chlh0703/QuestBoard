@@ -18,7 +18,7 @@ class OverlayQuestList extends StatelessWidget { // Stateless widget: dadas no s
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start, // El axis, en este caso pegado a la izquierda
       children:
-        quests.map((quest) => OverlayQuestCard(
+        quests.where((quest) => !quest.paused).map((quest) => OverlayQuestCard(
         quest: quest,
         onTap: () => onQuestTap(quest),
         )).toList(),

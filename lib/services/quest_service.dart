@@ -48,7 +48,7 @@ class QuestService extends ChangeNotifier {
     }
   }
 
-  Future<void> updateQuest(String questId, { String? newTitle, int? newExpReward, bool changeCompletion = false,}) async {
+  Future<void> updateQuest(String questId, { String? newTitle, int? newExpReward, bool changeCompletion = false, bool togglePause = false,}) async {
     final quest = _quests.cast<QuestModel?>().firstWhere(
           (q) => q?.id == questId,
       orElse: () => null,
@@ -69,9 +69,13 @@ class QuestService extends ChangeNotifier {
       if (quest.completed) {
         _playerService.addExperience(quest.experienceReward);
       } else {
-        _playerService.addExperience( - quest.experienceReward);
+        _playerService.addExperience(-quest.experienceReward);
       }
     }
+    if (togglePause){
+      quest.togglePaused();
+    }
+
     await _saveAndSync();
   }
 }

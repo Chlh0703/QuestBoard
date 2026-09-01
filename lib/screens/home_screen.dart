@@ -63,7 +63,7 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
                       Expanded(child:
                         QuestList(
                           quests: questService.quests,
-                          onQuestTap: (quest) {
+                          onToggleCompletion: (quest) {
                             questService.updateQuest(
                               quest.id,
                               changeCompletion: true,
@@ -77,6 +77,12 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
                           },
                           onQuestDelete: (quest) {
                             questService.removeQuest(quest);
+                          },
+                          onTogglePause: (quest) {
+                            questService.updateQuest(
+                              quest.id,
+                              togglePause: true,
+                            );
                           },
                         )
                       )
@@ -136,7 +142,7 @@ class HomeScreen extends StatelessWidget { // Stateless widget: dadas no se guar
             ElevatedButton(
               onPressed: () {
                 final experience = int.tryParse(experienceController.text) ?? 0;
-                if (experience == null || experience < 1 || experience > 1000) {
+                if (experience < 1 || experience > 1000) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(

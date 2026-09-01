@@ -26,6 +26,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(QuestModelAdapter());
   Hive.registerAdapter(PlayerModelAdapter());
+  Hive.deleteBoxFromDisk(StorageService.questBoxName);
   await Hive.openBox<QuestModel>(StorageService.questBoxName);
   await Hive.openBox<PlayerModel>(StorageService.playerBoxName);
 

@@ -3,19 +3,21 @@ import 'package:flutter/material.dart';
 import '../models/quest_model.dart';
 
 class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui no se guardan datos, si se guardaran seria stateful
-  final VoidCallback onTap;
+  final VoidCallback onToggleCompletion;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onArchive;
+  final VoidCallback onTogglePause;
 
   final QuestModel quest;
   const QuestCard({
     super.key, // Todos tienen una key, eso es para identificar, de alguna forma es parecido a una biblioteca
     required this.quest,
-    required this.onTap,
+    required this.onToggleCompletion,
     required this.onEdit,
     required this.onDelete,
     required this.onArchive,
+    required this.onTogglePause,
   });
 
   @override
@@ -27,30 +29,62 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
         children: [
           // Parte de la quest que responde al onTap
           GestureDetector(
-            onTap: onTap,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Text(
-                      quest.completed
-                          ? "■ ${quest.title}"
-                          : "□ ${quest.title}",
+                      quest.title,
                       style: TextStyle(
-                        color: quest.completed
-                            ? Colors.green
-                            : Colors.white,
+                        color: quest.completed ? Colors.green : Colors.white,
                         decoration: quest.completed
                             ? TextDecoration.lineThrough
                             : TextDecoration.none,
                       ),
                     ),
+
                     const Spacer(),
+
+                    // Complete / Uncomplete
+                    IconButton(
+                      onPressed: onToggleCompletion,
+                      icon: Icon(
+                        quest.completed
+                            ? Icons.close
+                            : Icons.check,
+                      ),
+                      color: quest.completed
+                          ? Colors.red
+                          : Colors.green,
+                      tooltip: quest.completed
+                          ? 'Mark as incomplete'
+                          : 'Complete',
+                    ),
+
+                    // Play / Pause
+                    IconButton(
+                      onPressed: onTogglePause,
+                      icon: Icon(
+                        quest.paused
+                            ? Icons.play_arrow
+                            : Icons.pause,
+                      ),
+                      color: quest.paused
+                          ? Colors.green
+                          : Colors.orange,
+                      tooltip: quest.paused
+                          ? 'Resume'
+                          : 'Pause',
+                    ),
+
+                    // Edit
                     IconButton(
                       onPressed: onEdit,
                       icon: const Icon(Icons.edit),
                     ),
+
+                    // Delete
                     IconButton(
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete),
@@ -76,7 +110,7 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
           if(quest.completed)
               ElevatedButton(
             onPressed: onArchive,
-            child: const Text('Archivar'),
+            child: const Text('Archive'),
           ),
         ],
       ),

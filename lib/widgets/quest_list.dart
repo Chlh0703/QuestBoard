@@ -3,18 +3,20 @@ import '../models/quest_model.dart';
 import 'quest_card.dart';
 
 class QuestList extends StatelessWidget { // Stateless widget: dadas no se guardan aqui esto es escencialmente una "imagen"
-  final Function(QuestModel) onQuestTap;
+  final Function(QuestModel) onToggleCompletion;
   final Function(QuestModel) onQuestEdit;
   final Function(QuestModel) onQuestDelete;
+  final Function(QuestModel) onTogglePause;
 
   final List<QuestModel> quests;
 
   const QuestList({
     super.key, // La "id" de esta classe
     required this.quests,
-    required this.onQuestTap,
+    required this.onToggleCompletion,
     required this.onQuestEdit,
     required this.onQuestDelete,
+    required this.onTogglePause,
   });
 
   @override
@@ -24,10 +26,11 @@ class QuestList extends StatelessWidget { // Stateless widget: dadas no se guard
       children:
         quests.map((quest) => QuestCard(
           quest: quest,
-          onTap: () => onQuestTap(quest),
+          onToggleCompletion: () => onToggleCompletion(quest),
           onEdit: () => onQuestEdit(quest),
           onDelete: () => onQuestDelete(quest),
-          onArchive: () { print("archiving");},
+          onArchive: () { print("archiving");}, //TODO: Gotta finish this part
+          onTogglePause: () => onTogglePause(quest),
         )).toList(),
 
     );
