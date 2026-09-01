@@ -22,18 +22,23 @@ class QuestModel extends HiveObject {
   @HiveField(4)
   bool _paused;
 
+  @HiveField(5)
+  int _classification; //0: Not_listed 1: Main, 2:Secondary, 3:Repetitive
+
   QuestModel({
     String? id,
     required this._title,
     required this._experienceReward,
     this._completed = false,
     this._paused = true,
+    this._classification = 0,
   }) : id = id ?? const Uuid().v4();
 
   String get title => _title;
   bool get completed => _completed;
   bool get paused => _paused;
   int get experienceReward => _experienceReward;
+  int get classification => _classification;
 
 
   void setTitle(String newTitle) {
@@ -50,6 +55,10 @@ class QuestModel extends HiveObject {
 
   void togglePaused(){
     _paused = !_paused;
+  }
+
+  void setClassification(int newClassification) {
+    _classification = newClassification;
   }
 
   Map<String, dynamic> toMap() {

@@ -48,7 +48,7 @@ class QuestService extends ChangeNotifier {
     }
   }
 
-  Future<void> updateQuest(String questId, { String? newTitle, int? newExpReward, bool changeCompletion = false, bool togglePause = false,}) async {
+  Future<void> updateQuest(String questId, { String? newTitle, int? newExpReward, bool changeCompletion = false, bool togglePause = false, int? newClassification}) async {
     final quest = _quests.cast<QuestModel?>().firstWhere(
           (q) => q?.id == questId,
       orElse: () => null,
@@ -74,6 +74,9 @@ class QuestService extends ChangeNotifier {
     }
     if (togglePause){
       quest.togglePaused();
+    }
+    if (newClassification != null) {
+      quest.setClassification(newClassification);
     }
 
     await _saveAndSync();

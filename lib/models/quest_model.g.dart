@@ -22,13 +22,14 @@ class QuestModelAdapter extends TypeAdapter<QuestModel> {
       experienceReward: fields[3] as int,
       completed: fields[2] as bool,
       paused: fields[4] as bool,
+      classification: fields[5] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, QuestModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class QuestModelAdapter extends TypeAdapter<QuestModel> {
       ..writeByte(3)
       ..write(obj._experienceReward)
       ..writeByte(4)
-      ..write(obj._paused);
+      ..write(obj._paused)
+      ..writeByte(5)
+      ..write(obj._classification);
   }
 
   @override
