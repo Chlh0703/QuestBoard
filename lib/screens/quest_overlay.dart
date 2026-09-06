@@ -102,13 +102,32 @@ class _QuestOverlayState extends State<QuestOverlay> {
                         ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "QUEST BOARD",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            const Text(
+                              "BOARD",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const Spacer(),
+
+                            IconButton(
+                              onPressed: () {
+                                WindowService.sendToMain("showMainWindow", null);
+                              },
+                              icon: const Icon(
+                                Icons.home,
+                                color: Colors.white,
+                              ),
+                              tooltip: "Open QuestBoard",
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 20),
                         OverlayQuestList(

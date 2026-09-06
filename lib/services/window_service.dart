@@ -7,17 +7,34 @@ import '../models/quest_model.dart';
 import 'overlay_controller.dart';
 import 'overlay_quest_service.dart';
 
+class MainWindowListener extends WindowListener {
+  @override
+  void onWindowClose() async {
+    // Instead of destroying the window, hide it.
+    await windowManager.hide();
+  }
+}
+
 
 class WindowService {
   static WindowController? _overlayWindow;
 
+  static final MainWindowListener _mainWindowListener = MainWindowListener();
+
   static Future<void> setupMainWindow() async {
     await windowManager.ensureInitialized();
+
     const windowOptions = WindowOptions(
       size: Size(900, 650),
       center: true,
       title: "QuestBoard",
     );
+
+    // Prevent the native close button from destroying the window.
+    await windowManager.setPreventClose(true);
+    // Listen for the native window close event.
+    windowManager.addListener(_mainWindowListener);
+
 
     await windowManager.waitUntilReadyToShow(
       windowOptions,
@@ -27,6 +44,7 @@ class WindowService {
       },
     );
   }
+
 
   static Future<void> createOverlayWindow() async {
     _overlayWindow = await WindowController.create(const WindowConfiguration(arguments: '{"window":"overlay"}',),);
@@ -42,11 +60,15 @@ class WindowService {
   }
 
 
-  static Future<void> initializeMainReceiver(QuestService questService) async {
+  static Future<void> initializeMainReceiver(QuestService questService) async { //TODO
     final controller = await WindowController.fromCurrentEngine();
     await controller.setWindowMethodHandler(
           (MethodCall call) async {
         switch (call.method) {
+          case "showMainWindow":
+            await windowManager.show();
+            await windowManager.focus();
+            break;
           case "toggleQuest":
             final quest = QuestModel.fromMap(
               Map<String, dynamic>.from(call.arguments),
