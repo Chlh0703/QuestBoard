@@ -69,12 +69,6 @@ class WindowService {
             await windowManager.show();
             await windowManager.focus();
             break;
-          case "toggleQuest":
-            final quest = QuestModel.fromMap(
-              Map<String, dynamic>.from(call.arguments),
-            );
-            await questService.updateQuest(quest.id, changeCompletion: true);
-            break;
           case "createQuest":
             print("creating quest in main");
             break;

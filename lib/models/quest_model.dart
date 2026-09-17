@@ -1,5 +1,6 @@
 // Este doc describe una classe, en este caso Quest
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:quest_board/models/task_model.dart';
 import 'package:uuid/uuid.dart';
 
 part 'quest_model.g.dart';
@@ -25,6 +26,9 @@ class QuestModel extends HiveObject {
   @HiveField(5)
   int _classification; //0: Not_listed 1: Main, 2:Secondary, 3:Repetitive
 
+  @HiveField(6)
+  List<TaskModel> _tasks;
+
   QuestModel({
     String? id,
     required this._title,
@@ -32,13 +36,16 @@ class QuestModel extends HiveObject {
     this._completed = false,
     this._paused = true,
     this._classification = 0,
-  }) : id = id ?? const Uuid().v4();
+    List<TaskModel>? tasks,
+  }) : id = id ?? const Uuid().v4(),
+        _tasks = tasks ?? [];
 
   String get title => _title;
   bool get completed => _completed;
   bool get paused => _paused;
   int get experienceReward => _experienceReward;
   int get classification => _classification;
+  List<TaskModel> get tasks => List.unmodifiable(_tasks);
 
 
   void setTitle(String newTitle) {
@@ -61,23 +68,72 @@ class QuestModel extends HiveObject {
     _classification = newClassification;
   }
 
+  void setTasks(List<TaskModel> newTasks){
+    _tasks = newTasks;
+  }
+
+  bool updateTask(String taskId, {String? newTitle, bool? changeCompletion}){
+    final task = _tasks.cast<TaskModel?>().firstWhere(
+          (q) => q?.id == taskId,
+      orElse: () => null,
+    );
+
+    if (task == null) return false;
+
+    // Quest
+    if (newTitle != null) {
+      task.setTitle(newTitle);
+    }
+
+    final previousCompleted = _completed;
+
+    if (changeCompletion != null) {
+      task.changeCompletion();
+      // Check if all tasks are completed
+      if (_tasks.isNotEmpty && _tasks.every((task) => task.completed)) {
+        _completed = true;
+      } else {
+        _completed = false;
+      }
+    }
+
+    return previousCompleted != _completed;
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'title': _title,
-      'completed': _completed,
+      'completed': completed,
       'experienceReward': _experienceReward,
       'paused': _paused,
+      'classification': _classification,
+      'tasks': _tasks.map((task) {
+        return {
+          'id': task.id,
+          'title': task.title,
+          'completed': task.completed,
+        };
+      }).toList(),
     };
   }
 
   factory QuestModel.fromMap(Map<String, dynamic> map) {
+    final tasks = (map['tasks'] as List<dynamic>? ?? [])
+        .map(
+          (task) => TaskModel(
+        id: task['id'],
+        title: task['title'],
+        completed: task['completed'] ?? false,
+      ),
+    ).toList();
     return QuestModel(
       id: map['id'],
       title: map['title'],
       experienceReward: map['experienceReward'],
       completed: map['completed'],
-      paused: map['paused']
+      paused: map['paused'],
+      tasks: tasks
     );
   }
 }

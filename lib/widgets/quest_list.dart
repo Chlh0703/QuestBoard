@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import '../models/quest_model.dart';
+import '../models/task_model.dart';
 import 'quest_card.dart';
 
 class QuestList extends StatelessWidget {
   final List<QuestModel> quests;
 
-  final Function(QuestModel) onToggleCompletion;
   final Function(QuestModel) onTogglePause;
   final Function(QuestModel) onQuestEdit;
   final Function(QuestModel) onQuestDelete;
+  final Function(QuestModel, TaskModel) onTaskTap;
 
   const QuestList({
     super.key,
     required this.quests,
-    required this.onToggleCompletion,
     required this.onTogglePause,
     required this.onQuestEdit,
     required this.onQuestDelete,
+    required this.onTaskTap,
   });
 
   @override
@@ -91,19 +92,21 @@ class QuestList extends StatelessWidget {
 
               return QuestCard(
                 quest: quest,
-                onToggleCompletion: () {
-                  onToggleCompletion(quest);
-                },
                 onTogglePause: () {
                   onTogglePause(quest);
-                },
+                  },
                 onEdit: () {
                   onQuestEdit(quest);
-                },
+                  },
                 onDelete: () {
                   onQuestDelete(quest);
-                },
-                onArchive: () {print("Archiving");},
+                  },
+                onArchive: () {
+                  print("Archiving");
+                  }, // TODO
+                onTaskTap: (task) {
+                  onTaskTap(quest, task);
+                  },
               );
             },
           ),

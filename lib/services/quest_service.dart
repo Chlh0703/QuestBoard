@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:quest_board/models/task_model.dart';
 import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/window_service.dart';
 
@@ -48,36 +49,57 @@ class QuestService extends ChangeNotifier {
     }
   }
 
-  Future<void> updateQuest(String questId, { String? newTitle, int? newExpReward, bool changeCompletion = false, bool togglePause = false, int? newClassification}) async {
+  Future<void> updateQuest(String questId, {
+        // Quest
+        String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification,
+        // Tasks
+        List<TaskModel>? newTasks, String? taskId, String? newTaskTitle, bool? changeTaskCompletion,
+      }) async {
     final quest = _quests.cast<QuestModel?>().firstWhere(
           (q) => q?.id == questId,
       orElse: () => null,
     );
 
-    if (quest == null) {
-      return;
-    }
+    if (quest == null) return;
 
+    // Quest
     if (newTitle != null) {
       quest.setTitle(newTitle);
     }
+
     if (newExpReward != null) {
       quest.setExperienceReward(newExpReward);
     }
-    if (changeCompletion) {
-      quest.changeCompletion();
-      if (quest.completed) {
-        _playerService.addExperience(quest.experienceReward);
-      } else {
-        _playerService.addExperience(-quest.experienceReward);
-      }
-    }
-    if (togglePause){
+
+    if (togglePause) {
       quest.togglePaused();
     }
+
     if (newClassification != null) {
       quest.setClassification(newClassification);
     }
+
+    // Tasks
+    if (newTasks != null) {
+      // Reemplazar toda la lista
+      quest.setTasks(newTasks);
+    } else if (taskId != null) {
+      // Modificar una Task concreta
+      final completionChanged = quest.updateTask(
+        taskId,
+        newTitle: newTaskTitle,
+        changeCompletion: changeTaskCompletion,
+      );
+
+      if (completionChanged) {
+        if (quest.completed) {
+          _playerService.addExperience(quest.experienceReward);
+        } else {
+          _playerService.addExperience(-quest.experienceReward);
+        }
+      }
+    }
+
 
     await _saveAndSync();
   }

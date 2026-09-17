@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:quest_board/services/player_service.dart';
 
 import '../models/quest_model.dart';
+import '../models/task_model.dart';
 import '../widgets/player_stats.dart';
 import '../widgets/quest_list.dart';
 import '../services/quest_service.dart';
@@ -63,14 +64,6 @@ class HomeScreen extends StatelessWidget {
                         child: QuestList(
                           quests: questService.quests,
 
-                          // Complete / uncomplete
-                          onToggleCompletion: (quest) {
-                            questService.updateQuest(
-                              quest.id,
-                              changeCompletion: true,
-                            );
-                          },
-
                           // Pause / resume
                           onTogglePause: (quest) {
                             questService.updateQuest(
@@ -90,6 +83,11 @@ class HomeScreen extends StatelessWidget {
                           // Delete
                           onQuestDelete: (quest) {
                             questService.removeQuest(quest);
+                          },
+
+                          // Change Completion On Task
+                          onTaskTap: (quest, task) {
+                            questService.updateQuest(quest.id, taskId: task.id, changeTaskCompletion: true);
                           },
                         ),
                       ),
@@ -120,6 +118,19 @@ class HomeScreen extends StatelessWidget {
     // If creating, default to Principal.
     int classification = quest?.classification ?? 1;
 
+    // Copy the current tasks so we don't modify the original
+    // Quest until the user presses Save.
+    List<TaskModel> tasks = quest?.tasks
+        .map(
+          (task) => TaskModel(
+        id: task.id,
+        title: task.title,
+        completed: task.completed,
+      ),
+    )
+        .toList() ??
+        [];
+
     showDialog(
       context: context,
       builder: (context) {
@@ -130,86 +141,144 @@ class HomeScreen extends StatelessWidget {
                 quest == null ? "New Quest" : "Edit Quest",
               ),
 
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Title
-                  TextField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: "Title",
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+
+                    // Title
+                    TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: "Title",
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // Classification
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Tooltip(
-                        message: 'Principal',
-                        child: ChoiceChip(
-                          label: const Text('P'),
-                          selected: classification == 1,
-                          onSelected: (_) {
-                            setState(() {
-                              classification = 1;
-                            });
-                          },
+                    // Classification
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Tooltip(
+                          message: 'Principal',
+                          child: ChoiceChip(
+                            label: const Text('P'),
+                            selected: classification == 1,
+                            onSelected: (_) {
+                              setState(() {
+                                classification = 1;
+                              });
+                            },
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(width: 10),
+                        const SizedBox(width: 10),
 
-                      Tooltip(
-                        message: 'Secondary',
-                        child: ChoiceChip(
-                          label: const Text('S'),
-                          selected: classification == 2,
-                          onSelected: (_) {
-                            setState(() {
-                              classification = 2;
-                            });
-                          },
+                        Tooltip(
+                          message: 'Secondary',
+                          child: ChoiceChip(
+                            label: const Text('S'),
+                            selected: classification == 2,
+                            onSelected: (_) {
+                              setState(() {
+                                classification = 2;
+                              });
+                            },
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(width: 10),
+                        const SizedBox(width: 10),
 
-                      Tooltip(
-                        message: 'Repetitive',
-                        child: ChoiceChip(
-                          label: const Text('R'),
-                          selected: classification == 3,
-                          onSelected: (_) {
-                            setState(() {
-                              classification = 3;
-                            });
-                          },
+                        Tooltip(
+                          message: 'Repetitive',
+                          child: ChoiceChip(
+                            label: const Text('R'),
+                            selected: classification == 3,
+                            onSelected: (_) {
+                              setState(() {
+                                classification = 3;
+                              });
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Experience
-                  TextField(
-                    controller: experienceController,
-                    decoration: const InputDecoration(
-                      labelText: "Experience",
-                      hintText: "1 - 1000",
+                      ],
                     ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                  ),
-                ],
+
+                    const SizedBox(height: 16),
+
+                    // Tasks
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Tasks",
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Current tasks
+                    if (tasks.isNotEmpty)
+                      ...tasks.map(
+                            (task) {
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+
+                            title: Text(task.title),
+
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                setState(() {
+                                  tasks.remove(task);
+                                });
+                              },
+                            ),
+                          );
+                        },
+                      ),
+
+                    // Add task
+                    TextButton.icon(
+                      onPressed: () {
+                        _showAddTaskDialog(
+                          context,
+                          onTaskCreated: (task) {
+                            setState(() {
+                              tasks.add(task);
+                            });
+                          },
+                        );
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text("Add Task"),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Experience
+                    TextField(
+                      controller: experienceController,
+                      decoration: const InputDecoration(
+                        labelText: "Experience",
+                        hintText: "1 - 1000",
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                    ),
+
+
+                  ],
+                ),
               ),
 
               actions: [
+
                 // Cancel
                 TextButton(
                   onPressed: () {
@@ -222,10 +291,14 @@ class HomeScreen extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     final experience =
-                        int.tryParse(experienceController.text) ?? 0;
+                        int.tryParse(
+                          experienceController.text,
+                        ) ??
+                            0;
 
                     // Validate experience
-                    if (experience < 1 || experience > 1000) {
+                    if (experience < 1 ||
+                        experience > 1000) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -255,6 +328,7 @@ class HomeScreen extends StatelessWidget {
                           title: titleController.text.trim(),
                           experienceReward: experience,
                           classification: classification,
+                          tasks: tasks,
                         ),
                       );
                     }
@@ -266,6 +340,7 @@ class HomeScreen extends StatelessWidget {
                         newTitle: titleController.text.trim(),
                         newExpReward: experience,
                         newClassification: classification,
+                        newTasks: tasks,
                       );
                     }
 
@@ -278,6 +353,58 @@ class HomeScreen extends StatelessWidget {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showAddTaskDialog(
+      BuildContext context, {
+        required Function(TaskModel) onTaskCreated,
+      }) {
+    final titleController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("New Task"),
+
+          content: TextField(
+            controller: titleController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: "Title",
+            ),
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Cancel"),
+            ),
+
+            ElevatedButton(
+              onPressed: () {
+                final title = titleController.text.trim();
+
+                if (title.isEmpty) {
+                  return;
+                }
+
+                final task = TaskModel(
+                  title: title,
+                );
+
+                onTaskCreated(task);
+
+                Navigator.pop(context);
+              },
+              child: const Text("Create"),
+            ),
+          ],
         );
       },
     );
