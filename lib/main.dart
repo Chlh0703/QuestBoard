@@ -5,6 +5,7 @@ import 'package:quest_board/models/player_model.dart';
 import 'package:quest_board/services/overlay_quest_service.dart';
 import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/storage_service.dart';
+import 'package:quest_board/models/task_model.dart';
 
 import 'models/quest_model.dart';
 import 'services/quest_service.dart';
@@ -26,8 +27,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(QuestModelAdapter());
   Hive.registerAdapter(PlayerModelAdapter());
-  Hive.deleteBoxFromDisk(StorageService.questBoxName);
-  Hive.deleteBoxFromDisk(StorageService.playerBoxName);
+  Hive.registerAdapter(TaskModelAdapter());
   await Hive.openBox<QuestModel>(StorageService.questBoxName);
   await Hive.openBox<PlayerModel>(StorageService.playerBoxName);
 

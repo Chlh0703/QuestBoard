@@ -37,7 +37,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               // Player
               Expanded(
-                flex: 3,
+                flex: 2,
                 child: PlayerStats(
                   player: playerService.player,
                 ),
@@ -45,7 +45,7 @@ class HomeScreen extends StatelessWidget {
 
               // Quests
               Expanded(
-                flex: 7,
+                flex: 8,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -229,6 +229,16 @@ class HomeScreen extends StatelessWidget {
 
                             title: Text(task.title),
 
+                            onTap: () {
+                              _showTaskDialog(
+                                context,
+                                task: task,
+                                onTaskEdited: (_) {
+                                  setState(() {});
+                                },
+                              );
+                            },
+
                             trailing: IconButton(
                               icon: const Icon(Icons.delete),
                               onPressed: () {
@@ -244,7 +254,7 @@ class HomeScreen extends StatelessWidget {
                     // Add task
                     TextButton.icon(
                       onPressed: () {
-                        _showAddTaskDialog(
+                        _showTaskDialog(
                           context,
                           onTaskCreated: (task) {
                             setState(() {
@@ -358,18 +368,23 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _showAddTaskDialog(
+  void _showTaskDialog(
       BuildContext context, {
-        required Function(TaskModel) onTaskCreated,
+        TaskModel? task,
+        Function(TaskModel)? onTaskCreated,
+        Function(TaskModel)? onTaskEdited,
       }) {
-    final titleController = TextEditingController();
+    final titleController = TextEditingController(
+      text: task?.title ?? "",
+    );
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("New Task"),
-
+          title: Text(
+            task == null ? "New Task" : "Edit Task",
+          ),
           content: TextField(
             controller: titleController,
             autofocus: true,
@@ -377,7 +392,6 @@ class HomeScreen extends StatelessWidget {
               labelText: "Title",
             ),
           ),
-
           actions: [
             TextButton(
               onPressed: () {
@@ -394,15 +408,25 @@ class HomeScreen extends StatelessWidget {
                   return;
                 }
 
-                final task = TaskModel(
-                  title: title,
-                );
+                if (task == null) {
+                  // CREAR
+                  final newTask = TaskModel(
+                    title: title,
+                  );
 
-                onTaskCreated(task);
+                  onTaskCreated?.call(newTask);
+                } else {
+                  // EDITAR
+                  task.setTitle(title);
+
+                  onTaskEdited?.call(task);
+                }
 
                 Navigator.pop(context);
               },
-              child: const Text("Create"),
+              child: Text(
+                task == null ? "Create" : "Save",
+              ),
             ),
           ],
         );

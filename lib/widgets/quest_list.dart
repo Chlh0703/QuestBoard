@@ -37,7 +37,8 @@ class QuestList extends StatelessWidget {
     quest.classification == 3)
         .toList();
 
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
           child: _buildSection(
@@ -46,7 +47,7 @@ class QuestList extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(width: 24),
 
         Expanded(
           child: _buildSection(
@@ -55,7 +56,7 @@ class QuestList extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(width: 24),
 
         Expanded(
           child: _buildSection(
@@ -72,7 +73,7 @@ class QuestList extends StatelessWidget {
       List<QuestModel> quests,
       ) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           title,
@@ -82,10 +83,11 @@ class QuestList extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(width: 16),
 
         Expanded(
           child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 12),
             itemCount: quests.length,
             itemBuilder: (context, index) {
               final quest = quests[index];

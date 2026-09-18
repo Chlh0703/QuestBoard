@@ -4,7 +4,7 @@ import 'package:quest_board/widgets/task_list.dart';
 import '../models/quest_model.dart';
 import '../models/task_model.dart';
 
-class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui no se guardan datos, si se guardaran seria stateful
+class QuestCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onArchive;
@@ -12,8 +12,9 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
   final Function(TaskModel) onTaskTap;
 
   final QuestModel quest;
+
   const QuestCard({
-    super.key, // Todos tienen una key, eso es para identificar, de alguna forma es parecido a una biblioteca
+    super.key,
     required this.quest,
     required this.onEdit,
     required this.onDelete,
@@ -25,10 +26,10 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
 
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
 
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.15),
@@ -40,24 +41,30 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
           children: [
 
             // =====================
-            // QUEST
+            // QUEST HEADER
             // =====================
 
             Row(
               children: [
-                Text(
-                  quest.title,
-                  style: TextStyle(
-                    color: quest.completed
-                        ? Colors.green
-                        : Colors.white,
-                    decoration: quest.completed
-                        ? TextDecoration.lineThrough
-                        : TextDecoration.none,
+
+                // Quest title
+                Expanded(
+                  child: Text(
+                    quest.title,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: quest.completed
+                          ? Colors.green
+                          : Colors.white,
+                      decoration: quest.completed
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-
-                const Spacer(),
 
                 // Play / Pause
                 IconButton(
@@ -89,7 +96,7 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
               ],
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             // =====================
             // TASKS
@@ -100,21 +107,35 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
               onTaskTap: onTaskTap,
             ),
 
+            const SizedBox(height: 10),
+
             // =====================
             // REWARD
             // =====================
 
-            Padding(
-              padding: const EdgeInsets.only(left: 20),
-              child: Text(
-                "REWARD: ${quest.experienceReward} EXP",
-                style: TextStyle(
-                  color: quest.completed
-                      ? Colors.green
-                      : Colors.white,
-                  decoration: quest.completed
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${quest.experienceReward} EXP',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: quest.completed
+                        ? Colors.green
+                        : Colors.white,
+                    decoration: quest.completed
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                  ),
                 ),
               ),
             ),
@@ -123,11 +144,14 @@ class QuestCard extends StatelessWidget { // La gracia de stateless esque aqui n
             // ARCHIVE
             // =====================
 
-            if (quest.completed)
+            if (quest.completed) ...[
+              const SizedBox(height: 10),
+
               ElevatedButton(
                 onPressed: onArchive,
                 child: const Text('Archive'),
               ),
+            ],
           ],
         ),
       ),

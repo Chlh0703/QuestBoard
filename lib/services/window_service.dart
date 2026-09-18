@@ -25,7 +25,7 @@ class WindowService {
     await windowManager.ensureInitialized();
 
     const windowOptions = WindowOptions(
-      size: Size(900, 650),
+      size: Size(1200, 800),
       center: true,
       title: "QuestBoard",
     );
