@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:quest_board/models/task_model.dart';
 import '../models/quest_model.dart';
 import 'overlay_quest_card.dart';
 
 class OverlayQuestList extends StatelessWidget { // Stateless widget: dadas no se guardan aqui esto es escencialmente una "imagen"
-  final Function(QuestModel) onQuestTap;
+  final Function(QuestModel, TaskModel) onTaskTap;
 
   final List<QuestModel> quests;
 
   const OverlayQuestList({
     super.key, // La "id" de esta classe
     required this.quests,
-    required this.onQuestTap,
+    required this.onTaskTap,
   });
 
   @override
@@ -20,7 +21,7 @@ class OverlayQuestList extends StatelessWidget { // Stateless widget: dadas no s
       children:
         quests.where((quest) => !quest.paused).map((quest) => OverlayQuestCard(
         quest: quest,
-        onTap: () => onQuestTap(quest),
+        onTaskTap: onTaskTap,
         )).toList(),
     );
   }

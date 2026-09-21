@@ -69,14 +69,8 @@ class WindowService {
             await windowManager.show();
             await windowManager.focus();
             break;
-          case "createQuest":
-            print("creating quest in main");
-            break;
-          case "updateQuest":
-            print("updating quest in main");
-            break;
-          case "deleteQuest":
-            print("deleting quest in main");
+          case "toggleTask":
+            questService.updateQuest(call.arguments["questId"], taskId: call.arguments["taskId"], changeTaskCompletion: true);
             break;
           default:
             return null;

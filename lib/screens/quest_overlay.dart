@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:quest_board/services/overlay_controller.dart';
 import '../models/quest_model.dart';
+import '../models/task_model.dart';
 import '../services/overlay_quest_service.dart';
 import '../services/window_service.dart';
 import '../widgets/overlay_quest_list.dart';
@@ -52,7 +53,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
   void _startHideTimer() {
     _hideTimer?.cancel(); // Cancela lo pendiente del timer
     _hideTimer = Timer( // Aqui es donde define cuanto dura y que hace
-      const Duration(seconds: 300),
+      const Duration(seconds: 3),
           () async {
         widget.overlayController.hide();
       },
@@ -63,10 +64,13 @@ class _QuestOverlayState extends State<QuestOverlay> {
     _hideTimer?.cancel();
   }
 
-  Future<void> _toggleQuest(QuestModel quest) async {
+  Future<void> _toggleTask(QuestModel quest, TaskModel task) async {
     await WindowService.sendToMain(
-      "toggleQuest",
-      quest.toMap(),
+      "toggleTask",
+      {
+        "questId": quest.id,
+        "taskId": task.id,
+      },
     );
   }
 
@@ -132,7 +136,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
                         const SizedBox(height: 20),
                         OverlayQuestList(
                           quests: widget.overlayQuestService.quests,
-                          onQuestTap: _toggleQuest,
+                          onTaskTap: _toggleTask,
                         ),
                       ],
                     )

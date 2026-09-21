@@ -1,46 +1,80 @@
 import 'package:flutter/material.dart';
 
 import '../models/quest_model.dart';
+import '../models/task_model.dart';
+import '../widgets/task_list.dart';
 
-class OverlayQuestCard extends StatelessWidget { // La gracia de stateless esque aqui no se guardan datos, si se guardaran seria stateful
-  final VoidCallback onTap;
+class OverlayQuestCard extends StatelessWidget {
+  final Function(QuestModel, TaskModel) onTaskTap;
   final QuestModel quest;
+
   const OverlayQuestCard({
-    super.key, // Todos tienen una key, eso es para identificar, de alguna forma es parecido a una biblioteca
+    super.key,
     required this.quest,
-    required this.onTap,
+    required this.onTaskTap,
   });
 
   @override
-  Widget build(BuildContext context) {  // Build es basicamente decir como se tiene que construir la classe
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8), // Padding: espacio, child: hijo, dado este espacio poner este hijo
-      child: GestureDetector( // Deteccion de tap
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              quest.completed
-                  ? "■ ${quest.title}"
-                  : "□ ${quest.title}",
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          // =====================
+          // QUEST
+          // =====================
+
+          Text(
+            quest.completed
+                ? "■ ${quest.title}"
+                : "□ ${quest.title}",
+            style: TextStyle(
+              color: quest.completed
+                  ? Colors.green
+                  : Colors.white,
+              decoration: quest.completed
+                  ? TextDecoration.lineThrough
+                  : TextDecoration.none,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          // =====================
+          // TASKS
+          // =====================
+
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: TaskList(
+              tasks: quest.tasks,
+              onTaskTap: (task) {onTaskTap(quest, task);},
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          // =====================
+          // REWARD
+          // =====================
+
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Text(
+              "REWARD: ${quest.experienceReward} EXP",
               style: TextStyle(
-                color: quest.completed ? Colors.green : Colors.white,
-                decoration: quest.completed ? TextDecoration.lineThrough  : TextDecoration.none,
+                color: quest.completed
+                    ? Colors.green
+                    : Colors.white,
+                decoration: quest.completed
+                    ? TextDecoration.lineThrough
+                    : TextDecoration.none,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left:20),
-              child: Text(
-                  "REWARD: ${quest.experienceReward} EXP",
-                style: TextStyle(
-                  color: quest.completed ? Colors.green : Colors.white,
-                  decoration: quest.completed ? TextDecoration.lineThrough : TextDecoration.none,
-                )
-              ),
-            )
-          ]
-        ),
+          ),
+        ],
       ),
     );
   }
