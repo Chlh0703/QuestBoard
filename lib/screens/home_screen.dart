@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget {
       animation: questService,
       builder: (context, child) {
         return Scaffold(
-          backgroundColor: Colors.grey,
+          backgroundColor: Colors.amberAccent,
 
           floatingActionButton: FloatingActionButton(
             onPressed: () {

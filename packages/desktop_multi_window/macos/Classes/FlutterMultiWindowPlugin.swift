@@ -151,6 +151,10 @@ class MultiWindowManager: NSObject {
         window.acceptsMouseMovedEvents = true
         window.setFrame(overlayFrame(), display: true)
 
+        if config.arguments.contains("\"overlay\"") {
+            window.level = .statusBar
+        }
+
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
@@ -217,7 +221,7 @@ func overlayFrame() -> NSRect {
     }
 
     let visible = screen.visibleFrame
-    let width: CGFloat = 200
+    let width: CGFloat = 400
     let height: CGFloat = 350
 
     return NSRect(
