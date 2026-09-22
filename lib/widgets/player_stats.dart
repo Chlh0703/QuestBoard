@@ -11,7 +11,7 @@ class PlayerStats extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) { //TODO
+  Widget build(BuildContext context) { //TODO: hp management
     final maxExperience =
     player.experienceRequiredForNextLevel();
 

@@ -28,6 +28,8 @@ void main() async {
   Hive.registerAdapter(QuestModelAdapter());
   Hive.registerAdapter(PlayerModelAdapter());
   Hive.registerAdapter(TaskModelAdapter());
+  // Hive.deleteBoxFromDisk(StorageService.questBoxName);
+  // Hive.deleteBoxFromDisk(StorageService.playerBoxName);
   await Hive.openBox<QuestModel>(StorageService.questBoxName);
   await Hive.openBox<PlayerModel>(StorageService.playerBoxName);
 

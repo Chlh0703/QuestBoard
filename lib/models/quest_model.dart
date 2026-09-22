@@ -27,6 +27,9 @@ class QuestModel extends HiveObject {
   int _classification; //0: Not_listed 1: Main, 2:Secondary, 3:Repetitive
 
   @HiveField(6)
+  DateTime? _dueDate;
+
+  @HiveField(7)
   List<TaskModel> _tasks;
 
   QuestModel({
@@ -37,6 +40,7 @@ class QuestModel extends HiveObject {
     this._paused = true,
     this._classification = 0,
     List<TaskModel>? tasks,
+    this._dueDate,
   }) : id = id ?? const Uuid().v4(),
         _tasks = tasks ?? [];
 
@@ -45,6 +49,7 @@ class QuestModel extends HiveObject {
   bool get paused => _paused;
   int get experienceReward => _experienceReward;
   int get classification => _classification;
+  DateTime? get dueDate => _dueDate;
   List<TaskModel> get tasks => List.unmodifiable(_tasks);
 
 
@@ -66,6 +71,10 @@ class QuestModel extends HiveObject {
 
   void setClassification(int newClassification) {
     _classification = newClassification;
+  }
+
+  void setDueDate(DateTime newDueDate) {
+    _dueDate = newDueDate;
   }
 
   void setTasks(List<TaskModel> newTasks){
@@ -108,6 +117,7 @@ class QuestModel extends HiveObject {
       'experienceReward': _experienceReward,
       'paused': _paused,
       'classification': _classification,
+      'dueDate': _dueDate?.toIso8601String(),
       'tasks': _tasks.map((task) {
         return {
           'id': task.id,
@@ -128,12 +138,13 @@ class QuestModel extends HiveObject {
       ),
     ).toList();
     return QuestModel(
-      id: map['id'],
-      title: map['title'],
-      experienceReward: map['experienceReward'],
-      completed: map['completed'],
-      paused: map['paused'],
-      tasks: tasks
+        id: map['id'],
+        title: map['title'],
+        experienceReward: map['experienceReward'],
+        completed: map['completed'],
+        paused: map['paused'],
+        dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
+        tasks: tasks
     );
   }
 }

@@ -51,7 +51,7 @@ class QuestService extends ChangeNotifier {
 
   Future<void> updateQuest(String questId, {
         // Quest
-        String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification,
+        String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate,
         // Tasks
         List<TaskModel>? newTasks, String? taskId, String? newTaskTitle, bool? changeTaskCompletion,
       }) async {
@@ -77,6 +77,10 @@ class QuestService extends ChangeNotifier {
 
     if (newClassification != null) {
       quest.setClassification(newClassification);
+    }
+
+    if (newDueDate != null) {
+      quest.setDueDate(newDueDate);
     }
 
     // Tasks

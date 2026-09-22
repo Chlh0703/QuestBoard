@@ -118,6 +118,9 @@ class HomeScreen extends StatelessWidget {
     // If creating, default to Principal.
     int classification = quest?.classification ?? 1;
 
+    // Current quest deadline.
+    DateTime? dueDate = quest?.dueDate;
+
     // Copy the current tasks so we don't modify the original
     // Quest until the user presses Save.
     List<TaskModel> tasks = quest?.tasks
@@ -212,9 +215,7 @@ class HomeScreen extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Tasks",
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
 
@@ -282,13 +283,46 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
 
+                    const SizedBox(height: 20),
 
+                    // Due Date
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Due Date",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final selectedDate = await _selectDueDate(
+                            context,
+                            dueDate,
+                          );
+
+                          setState(() {
+                            dueDate = selectedDate;
+                          });
+                        },
+                        icon: const Icon(Icons.calendar_today),
+                        label: Text(
+                          dueDate == null
+                              ? "No deadline"
+                              : _formatDueDate(dueDate!),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
 
               actions: [
-
                 // Cancel
                 TextButton(
                   onPressed: () {
@@ -307,8 +341,7 @@ class HomeScreen extends StatelessWidget {
                             0;
 
                     // Validate experience
-                    if (experience < 1 ||
-                        experience > 1000) {
+                    if (experience < 1 || experience > 1000) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -339,6 +372,7 @@ class HomeScreen extends StatelessWidget {
                           experienceReward: experience,
                           classification: classification,
                           tasks: tasks,
+                          dueDate: dueDate,
                         ),
                       );
                     }
@@ -351,6 +385,7 @@ class HomeScreen extends StatelessWidget {
                         newExpReward: experience,
                         newClassification: classification,
                         newTasks: tasks,
+                        newDueDate: dueDate,
                       );
                     }
 
@@ -366,6 +401,169 @@ class HomeScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<DateTime?> _selectDueDate(
+      BuildContext context,
+      DateTime? currentDueDate,
+      ) async {
+    final now = DateTime.now();
+
+    final option = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return SimpleDialog(
+          title: const Text('Due Date'),
+
+          children: [
+            // Today
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'today');
+              },
+              child: const Text('Today'),
+            ),
+
+            // Tomorrow
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'tomorrow');
+              },
+              child: const Text('Tomorrow'),
+            ),
+
+            // Next week
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'nextWeek');
+              },
+              child: const Text('Next week'),
+            ),
+
+            // Custom
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, 'custom');
+              },
+              child: const Text('Custom...'),
+            ),
+
+            // Remove
+            if (currentDueDate != null)
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context, 'remove');
+                },
+                child: const Text('Remove deadline'),
+              ),
+          ],
+        );
+      },
+    );
+
+    // User closed the dialog.
+    if (option == null) {
+      return currentDueDate;
+    }
+
+    // Remove deadline.
+    if (option == 'remove') {
+      return null;
+    }
+
+    if (option == 'today') {
+      return DateTime(
+        now.year,
+        now.month,
+        now.day,
+        23,
+        59,
+      );
+    }
+
+    if (option == 'tomorrow') {
+      final tomorrow = now.add(
+        const Duration(days: 1),
+      );
+
+      return DateTime(
+        tomorrow.year,
+        tomorrow.month,
+        tomorrow.day,
+        23,
+        59,
+      );
+    }
+
+
+    if (option == 'nextWeek') {
+      final nextWeek = now.add(
+        const Duration(days: 7),
+      );
+
+      return DateTime(
+        nextWeek.year,
+        nextWeek.month,
+        nextWeek.day,
+        23,
+        59,
+      );
+    }
+
+    final date = await showDatePicker(
+      context: context,
+
+      initialDate: currentDueDate ?? now,
+
+      firstDate: DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ),
+
+      lastDate: DateTime(
+        now.year + 10,
+      ),
+    );
+
+    // User cancelled date picker.
+    if (date == null) {
+      return currentDueDate;
+    }
+
+    // Choose time.
+    final time = await showTimePicker(
+      context: context,
+
+      initialTime: currentDueDate != null
+          ? TimeOfDay.fromDateTime(currentDueDate)
+          : TimeOfDay.now(),
+    );
+
+    // User cancelled time picker.
+    if (time == null) {
+      return currentDueDate;
+    }
+
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+  }
+
+
+  String _formatDueDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+
+    return '$day/$month/$year $hour:$minute';
   }
 
   void _showTaskDialog(
@@ -409,14 +607,14 @@ class HomeScreen extends StatelessWidget {
                 }
 
                 if (task == null) {
-                  // CREAR
+                  // CREATE
                   final newTask = TaskModel(
                     title: title,
                   );
 
                   onTaskCreated?.call(newTask);
                 } else {
-                  // EDITAR
+                  // EDIT
                   task.setTitle(title);
 
                   onTaskEdited?.call(task);

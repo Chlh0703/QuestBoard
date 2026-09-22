@@ -60,7 +60,7 @@ class WindowService {
   }
 
 
-  static Future<void> initializeMainReceiver(QuestService questService) async { //TODO
+  static Future<void> initializeMainReceiver(QuestService questService) async {
     final controller = await WindowController.fromCurrentEngine();
     await controller.setWindowMethodHandler(
           (MethodCall call) async {

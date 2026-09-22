@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:quest_board/widgets/task_list.dart';
 
 import '../models/quest_model.dart';
 import '../models/task_model.dart';
 
-class QuestCard extends StatelessWidget {
+class QuestCard extends StatefulWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onArchive;
@@ -22,6 +24,74 @@ class QuestCard extends StatelessWidget {
     required this.onTogglePause,
     required this.onTaskTap,
   });
+
+  @override
+  State<QuestCard> createState() => _QuestCardState();
+}
+
+class _QuestCardState extends State<QuestCard> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Actualizamos el contador cada segundo.
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+          (_) {
+        if (widget.quest.dueDate != null && mounted) {
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _formatRemainingTime() {
+    final dueAt = widget.quest.dueDate;
+
+    // No hay deadline.
+    if (dueAt == null) {
+      return 'No deadline';
+    }
+
+    final remaining = dueAt.difference(DateTime.now());
+
+    // Deadline pasado.
+    if (remaining.isNegative || remaining.inSeconds <= 0) {
+      return 'Due';
+    }
+
+    // 24 horas o más -> solo días
+    if (remaining.inHours >= 24) {
+      return '${remaining.inDays}d';
+    }
+
+    // Menos de 24 horas -> horas y minutos
+    if (remaining.inMinutes >= 60) {
+      final hours = remaining.inHours;
+      final minutes = remaining.inMinutes.remainder(60);
+
+      return '${hours}h ${minutes}m';
+    }
+
+    // Menos de 60 minutos -> minutos y segundos
+    if (remaining.inSeconds >= 60) {
+      final minutes = remaining.inMinutes;
+      final seconds = remaining.inSeconds.remainder(60);
+
+      return '${minutes}m ${seconds}s';
+    }
+
+    // Menos de 60 segundos -> solo segundos
+    return '${remaining.inSeconds}s';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,14 +120,14 @@ class QuestCard extends StatelessWidget {
                 // Quest title
                 Expanded(
                   child: Text(
-                    quest.title,
+                    widget.quest.title,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: quest.completed
+                      color: widget.quest.completed
                           ? Colors.green
                           : Colors.white,
-                      decoration: quest.completed
+                      decoration: widget.quest.completed
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,
                     ),
@@ -68,33 +138,49 @@ class QuestCard extends StatelessWidget {
 
                 // Play / Pause
                 IconButton(
-                  onPressed: onTogglePause,
+                  onPressed: widget.onTogglePause,
                   icon: Icon(
-                    quest.paused
+                    widget.quest.paused
                         ? Icons.play_arrow
                         : Icons.pause,
                   ),
-                  color: quest.paused
+                  color: widget.quest.paused
                       ? Colors.green
                       : Colors.orange,
-                  tooltip: quest.paused
+                  tooltip: widget.quest.paused
                       ? 'Resume'
                       : 'Pause',
                 ),
 
                 // Edit
                 IconButton(
-                  onPressed: onEdit,
+                  onPressed: widget.onEdit,
                   icon: const Icon(Icons.edit),
                 ),
 
                 // Delete
                 IconButton(
-                  onPressed: onDelete,
+                  onPressed: widget.onDelete,
                   icon: const Icon(Icons.delete),
                 ),
               ],
             ),
+
+            // =====================
+            // DEADLINE
+            // =====================
+
+            if (widget.quest.dueDate != null)
+              Text(
+                _formatRemainingTime(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: widget.quest.completed
+                      ? Colors.green
+                      : Colors.white,
+                ),
+              ),
 
             const SizedBox(height: 8),
 
@@ -103,8 +189,8 @@ class QuestCard extends StatelessWidget {
             // =====================
 
             TaskList(
-              tasks: quest.tasks,
-              onTaskTap: onTaskTap,
+              tasks: widget.quest.tasks,
+              onTaskTap: widget.onTaskTap,
             ),
 
             const SizedBox(height: 10),
@@ -125,14 +211,14 @@ class QuestCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '${quest.experienceReward} EXP',
+                  '${widget.quest.experienceReward} EXP',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: quest.completed
+                    color: widget.quest.completed
                         ? Colors.green
                         : Colors.white,
-                    decoration: quest.completed
+                    decoration: widget.quest.completed
                         ? TextDecoration.lineThrough
                         : TextDecoration.none,
                   ),
@@ -144,11 +230,11 @@ class QuestCard extends StatelessWidget {
             // ARCHIVE
             // =====================
 
-            if (quest.completed) ...[
+            if (widget.quest.completed) ...[
               const SizedBox(height: 10),
 
               ElevatedButton(
-                onPressed: onArchive,
+                onPressed: widget.onArchive,
                 child: const Text('Archive'),
               ),
             ],
