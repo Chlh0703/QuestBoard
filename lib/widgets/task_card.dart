@@ -74,6 +74,20 @@ class _TaskCardState extends State<TaskCard> {
                   ),
                 ),
               ),
+              if (widget.task.currentCount != null && widget.task.targetCount != null)
+                Text(
+                  '${widget.task.currentCount} / ${widget.task.targetCount}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: widget.task.completed
+                        ? Colors.green
+                        : Colors.white,
+                  ),
+                ),
+
+              const SizedBox(width: 12),
+
               if (widget.task.dueDate != null)
                 Text(
                   DateTimeService.formatRemainingTime(widget.task.dueDate),
@@ -84,7 +98,6 @@ class _TaskCardState extends State<TaskCard> {
                         ? Colors.green
                         : Colors.white,
                   ),
-
                 ),
             ],
           ),

@@ -53,7 +53,7 @@ class QuestService extends ChangeNotifier {
         // Quest
         String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate,
         // Tasks
-        List<TaskModel>? newTasks, String? taskId, String? newTaskTitle, bool? changeTaskCompletion,
+        List<TaskModel>? newTasks, String? taskId, String? newTaskTitle, bool? taskTapped,
       }) async {
     final quest = _quests.cast<QuestModel?>().firstWhere(
           (q) => q?.id == questId,
@@ -98,7 +98,7 @@ class QuestService extends ChangeNotifier {
       final completionChanged = quest.updateTask(
         taskId,
         newTitle: newTaskTitle,
-        changeCompletion: changeTaskCompletion,
+        taskTapped: taskTapped,
       );
 
       if (completionChanged) {

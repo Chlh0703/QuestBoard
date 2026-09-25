@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:quest_board/services/datetime_service.dart';
@@ -90,7 +88,7 @@ class HomeScreen extends StatelessWidget {
 
                           // Change Completion On Task
                           onTaskTap: (quest, task) {
-                            questService.updateQuest(quest.id, taskId: task.id, changeTaskCompletion: true);
+                            questService.updateQuest(quest.id, taskId: task.id, taskTapped: true);
                           },
                         ),
                       ),
@@ -564,6 +562,16 @@ class HomeScreen extends StatelessWidget {
       text: task?.title ?? "",
     );
 
+    // Contador actual de la tarea.
+    final currentCountController = TextEditingController(
+      text: task?.currentCount?.toString() ?? "",
+    );
+
+    // Objetivo total de la tarea.
+    final targetCountController = TextEditingController(
+      text: task?.targetCount?.toString() ?? "",
+    );
+
     // Fecha límite actual de la tarea, si estamos editándola.
     DateTime? dueDate = task?.dueDate;
 
@@ -594,6 +602,34 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // -------------------------
+                  // CONTADOR ACTUAL
+                  // -------------------------
+                  TextField(
+                    controller: currentCountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Current Count",
+                      hintText: "Ej. 23",
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // -------------------------
+                  // OBJETIVO
+                  // -------------------------
+                  TextField(
+                    controller: targetCountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Target Count",
+                      hintText: "Ej. 50",
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // -------------------------
                   // FECHA LÍMITE
                   // -------------------------
                   Align(
@@ -611,6 +647,7 @@ class HomeScreen extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () async {
                         print(questDueDate);
+
                         final selectedDate =
                         await _selectDueDate(
                           context,
@@ -671,6 +708,79 @@ class HomeScreen extends StatelessWidget {
                       return;
                     }
 
+                    // -------------------------
+                    // VALIDAR CONTADOR
+                    // -------------------------
+
+                    final currentCount =
+                    int.tryParse(
+                      currentCountController.text.trim(),
+                    );
+
+                    final targetCount =
+                    int.tryParse(
+                      targetCountController.text.trim(),
+                    );
+
+                    // Si uno de los dos está rellenado,
+                    // ambos deben estarlo.
+                    if ((currentCount == null) !=
+                        (targetCount == null)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Current Count and Target Count must both be filled.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // El contador actual no puede ser negativo.
+                    if (currentCount != null &&
+                        currentCount < 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Current Count cannot be negative.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // El objetivo debe ser mayor que 0.
+                    if (targetCount != null &&
+                        targetCount <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Target Count must be greater than 0.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // El contador actual no puede superar
+                    // el objetivo.
+                    if (currentCount != null &&
+                        targetCount != null &&
+                        currentCount > targetCount) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Current Count cannot be greater than Target Count.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // -------------------------
+                    // VALIDAR FECHA
+                    // -------------------------
+
                     // La fecha de la tarea no puede superar
                     // la fecha de la quest.
                     if (questDueDate != null &&
@@ -693,6 +803,8 @@ class HomeScreen extends StatelessWidget {
                       final newTask = TaskModel(
                         title: title,
                         dueDate: dueDate,
+                        currentCount: currentCount,
+                        targetCount: targetCount,
                       );
 
                       onTaskCreated?.call(newTask);
@@ -704,6 +816,9 @@ class HomeScreen extends StatelessWidget {
                     else {
                       task.setTitle(title);
                       task.setDueDate(dueDate!);
+
+                      task.setCurrentCount(currentCount!);
+                      task.setTargetCount(targetCount!);
 
                       onTaskEdited?.call(task);
                     }

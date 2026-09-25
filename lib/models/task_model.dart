@@ -17,16 +17,26 @@ class TaskModel extends HiveObject {
   @HiveField(3)
   DateTime? _dueDate;
 
+  @HiveField(4)
+  int? _currentCount;
+
+  @HiveField(5)
+  int? _targetCount;
+
   TaskModel({
     String? id,
     required this._title,
     this._completed = false,
     this._dueDate,
+    this._currentCount,
+    this._targetCount,
   })  : id = id ?? const Uuid().v4();
 
   String get title => _title;
   bool get completed => _completed;
   DateTime? get dueDate => _dueDate;
+  int? get currentCount => _currentCount;
+  int? get targetCount => _targetCount;
 
   void setTitle(String newTitle) {
     _title = newTitle;
@@ -38,5 +48,13 @@ class TaskModel extends HiveObject {
 
   void setDueDate(DateTime newDueDate) {
     _dueDate = newDueDate;
+  }
+
+  void setCurrentCount(int newCurrentCount){
+    _currentCount = newCurrentCount;
+  }
+
+  void setTargetCount(int newTargetCount){
+    _targetCount = newTargetCount;
   }
 }

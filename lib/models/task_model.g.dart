@@ -21,13 +21,15 @@ class TaskModelAdapter extends TypeAdapter<TaskModel> {
       title: fields[1] as String,
       completed: fields[2] as bool,
       dueDate: fields[3] as DateTime?,
+      currentCount: fields[4] as int?,
+      targetCount: fields[5] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TaskModel obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -35,7 +37,11 @@ class TaskModelAdapter extends TypeAdapter<TaskModel> {
       ..writeByte(2)
       ..write(obj._completed)
       ..writeByte(3)
-      ..write(obj._dueDate);
+      ..write(obj._dueDate)
+      ..writeByte(4)
+      ..write(obj._currentCount)
+      ..writeByte(5)
+      ..write(obj._targetCount);
   }
 
   @override

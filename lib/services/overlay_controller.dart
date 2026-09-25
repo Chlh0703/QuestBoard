@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'overlay_service.dart';
 
 class OverlayController extends ChangeNotifier { // Controllador de overlay
-  bool visible = true;
+  bool visible = false;
 
   Future<void> show() async {
     visible = true;

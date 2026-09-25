@@ -47,8 +47,7 @@ class WindowService {
 
 
   static Future<void> createOverlayWindow() async {
-    _overlayWindow = await WindowController.create(const WindowConfiguration(arguments: '{"window":"overlay"}',),);
-    await _overlayWindow!.show();
+    _overlayWindow = await WindowController.create(const WindowConfiguration(arguments: '{"window":"overlay"}', hiddenAtLaunch: true,),);
   }
 
   static Future<void> showOverlay() async {
@@ -70,7 +69,7 @@ class WindowService {
             await windowManager.focus();
             break;
           case "toggleTask":
-            questService.updateQuest(call.arguments["questId"], taskId: call.arguments["taskId"], changeTaskCompletion: true);
+            questService.updateQuest(call.arguments["questId"], taskId: call.arguments["taskId"], taskTapped: true);
             break;
           default:
             return null;

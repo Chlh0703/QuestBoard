@@ -81,7 +81,11 @@ class QuestModel extends HiveObject {
     _tasks = newTasks;
   }
 
-  bool updateTask(String taskId, {String? newTitle, bool? changeCompletion}){
+  bool updateTask(String taskId,
+      { String? newTitle,
+        int? newCurrentCount,
+        int? newTargetCount,
+        bool? taskTapped}){
     final task = _tasks.cast<TaskModel?>().firstWhere(
           (q) => q?.id == taskId,
       orElse: () => null,
@@ -94,16 +98,31 @@ class QuestModel extends HiveObject {
       task.setTitle(newTitle);
     }
 
+    if (newCurrentCount != null) {
+      task.setCurrentCount(newCurrentCount);
+    }
+
+    if (newTargetCount != null) {
+      task.setTargetCount(newTargetCount);
+    }
+
     final previousCompleted = _completed;
 
-    if (changeCompletion != null) {
-      task.changeCompletion();
-      // Check if all tasks are completed
-      if (_tasks.isNotEmpty && _tasks.every((task) => task.completed)) {
-        _completed = true;
+
+    if (taskTapped != null) {
+      if (task.targetCount != null) {
+        final currentCount = task.currentCount ?? 0;
+        if (currentCount < task.targetCount!) {
+          task.setCurrentCount(currentCount + 1);
+        }
+        if (currentCount == task.targetCount!){
+          task.changeCompletion();
+        }
       } else {
-        _completed = false;
+        task.changeCompletion();
       }
+      _completed = _tasks.isNotEmpty &&
+          _tasks.every((task) => task.completed);
     }
 
     return previousCompleted != _completed;
