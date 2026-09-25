@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:quest_board/services/datetime_service.dart';
 
 import '../models/task_model.dart';
 
@@ -60,17 +61,31 @@ class _TaskCardState extends State<TaskCard> {
 
               const SizedBox(width: 8),
 
-              Text(
-                widget.task.title,
-                style: TextStyle(
-                  color: widget.task.completed
-                      ? Colors.white54
-                      : Colors.white,
-                  decoration: widget.task.completed
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
+              Expanded(
+                child: Text(
+                  widget.task.title,
+                  style: TextStyle(
+                    color: widget.task.completed
+                        ? Colors.white54
+                        : Colors.white,
+                    decoration: widget.task.completed
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                  ),
                 ),
               ),
+              if (widget.task.dueDate != null)
+                Text(
+                  DateTimeService.formatRemainingTime(widget.task.dueDate),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: widget.task.completed
+                        ? Colors.green
+                        : Colors.white,
+                  ),
+
+                ),
             ],
           ),
         ),

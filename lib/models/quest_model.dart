@@ -73,7 +73,7 @@ class QuestModel extends HiveObject {
     _classification = newClassification;
   }
 
-  void setDueDate(DateTime newDueDate) {
+  void setDueDate(DateTime? newDueDate) {
     _dueDate = newDueDate;
   }
 
@@ -123,6 +123,7 @@ class QuestModel extends HiveObject {
           'id': task.id,
           'title': task.title,
           'completed': task.completed,
+          'dueDate': task.dueDate?.toIso8601String(),
         };
       }).toList(),
     };
@@ -132,9 +133,10 @@ class QuestModel extends HiveObject {
     final tasks = (map['tasks'] as List<dynamic>? ?? [])
         .map(
           (task) => TaskModel(
-        id: task['id'],
-        title: task['title'],
-        completed: task['completed'] ?? false,
+            id: task['id'],
+            title: task['title'],
+            completed: task['completed'] ?? false,
+            dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
       ),
     ).toList();
     return QuestModel(
@@ -143,6 +145,7 @@ class QuestModel extends HiveObject {
         experienceReward: map['experienceReward'],
         completed: map['completed'],
         paused: map['paused'],
+        classification: map['classification'] ?? 0,
         dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
         tasks: tasks
     );

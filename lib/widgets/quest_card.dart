@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:quest_board/services/datetime_service.dart';
 import 'package:quest_board/widgets/task_list.dart';
 
 import '../models/quest_model.dart';
@@ -52,47 +53,7 @@ class _QuestCardState extends State<QuestCard> {
     _timer?.cancel();
     super.dispose();
   }
-
-  String _formatRemainingTime() {
-    final dueAt = widget.quest.dueDate;
-
-    // No hay deadline.
-    if (dueAt == null) {
-      return 'No deadline';
-    }
-
-    final remaining = dueAt.difference(DateTime.now());
-
-    // Deadline pasado.
-    if (remaining.isNegative || remaining.inSeconds <= 0) {
-      return 'Due';
-    }
-
-    // 24 horas o más -> solo días
-    if (remaining.inHours >= 24) {
-      return '${remaining.inDays}d';
-    }
-
-    // Menos de 24 horas -> horas y minutos
-    if (remaining.inMinutes >= 60) {
-      final hours = remaining.inHours;
-      final minutes = remaining.inMinutes.remainder(60);
-
-      return '${hours}h ${minutes}m';
-    }
-
-    // Menos de 60 minutos -> minutos y segundos
-    if (remaining.inSeconds >= 60) {
-      final minutes = remaining.inMinutes;
-      final seconds = remaining.inSeconds.remainder(60);
-
-      return '${minutes}m ${seconds}s';
-    }
-
-    // Menos de 60 segundos -> solo segundos
-    return '${remaining.inSeconds}s';
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -172,7 +133,7 @@ class _QuestCardState extends State<QuestCard> {
 
             if (widget.quest.dueDate != null)
               Text(
-                _formatRemainingTime(),
+                DateTimeService.formatRemainingTime(widget.quest.dueDate),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

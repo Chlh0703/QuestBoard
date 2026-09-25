@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quest_board/services/datetime_service.dart';
 import 'package:quest_board/services/player_service.dart';
 
 import '../models/quest_model.dart';
@@ -126,9 +129,10 @@ class HomeScreen extends StatelessWidget {
     List<TaskModel> tasks = quest?.tasks
         .map(
           (task) => TaskModel(
-        id: task.id,
-        title: task.title,
-        completed: task.completed,
+            id: task.id,
+            title: task.title,
+            completed: task.completed,
+            dueDate: task.dueDate,
       ),
     )
         .toList() ??
@@ -227,12 +231,26 @@ class HomeScreen extends StatelessWidget {
                             (task) {
                           return ListTile(
                             contentPadding: EdgeInsets.zero,
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(task.title),
+                                if (task.dueDate != null)
+                                  Text(
+                                    DateTimeService.formatDateTime(task.dueDate!),
 
-                            title: Text(task.title),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                              ],
+                            ),
 
                             onTap: () {
                               _showTaskDialog(
                                 context,
+                                questDueDate: quest?.dueDate,
                                 task: task,
                                 onTaskEdited: (_) {
                                   setState(() {});
@@ -257,6 +275,7 @@ class HomeScreen extends StatelessWidget {
                       onPressed: () {
                         _showTaskDialog(
                           context,
+                          questDueDate: quest?.dueDate,
                           onTaskCreated: (task) {
                             setState(() {
                               tasks.add(task);
@@ -314,7 +333,7 @@ class HomeScreen extends StatelessWidget {
                         label: Text(
                           dueDate == null
                               ? "No deadline"
-                              : _formatDueDate(dueDate!),
+                              : DateTimeService.formatDateTime(dueDate!),
                         ),
                       ),
                     ),
@@ -405,8 +424,9 @@ class HomeScreen extends StatelessWidget {
 
   Future<DateTime?> _selectDueDate(
       BuildContext context,
-      DateTime? currentDueDate,
-      ) async {
+      DateTime? currentDueDate, {
+        DateTime? maximumDueDate,
+      }) async {
     final now = DateTime.now();
 
     final option = await showDialog<String>(
@@ -414,41 +434,38 @@ class HomeScreen extends StatelessWidget {
       builder: (context) {
         return SimpleDialog(
           title: const Text('Due Date'),
-
           children: [
-            // Today
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context, 'today');
               },
               child: const Text('Today'),
             ),
-
-            // Tomorrow
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context, 'tomorrow');
               },
               child: const Text('Tomorrow'),
             ),
-
-            // Next week
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context, 'nextWeek');
               },
               child: const Text('Next week'),
             ),
-
-            // Custom
+            if (maximumDueDate != null)
+              SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context, 'maxLength');
+                },
+                child: const Text('Max Length'),
+              ),
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context, 'custom');
               },
               child: const Text('Custom...'),
             ),
-
-            // Remove
             if (currentDueDate != null)
               SimpleDialogOption(
                 onPressed: () {
@@ -461,113 +478,84 @@ class HomeScreen extends StatelessWidget {
       },
     );
 
-    // User closed the dialog.
     if (option == null) {
       return currentDueDate;
     }
 
-    // Remove deadline.
     if (option == 'remove') {
       return null;
     }
 
+    DateTime? selectedDate;
+
     if (option == 'today') {
-      return DateTime(
-        now.year,
-        now.month,
-        now.day,
-        23,
-        59,
+      selectedDate = DateTimeService.endOfDay(now);
+    } else if (option == 'tomorrow') {
+      selectedDate = DateTimeService.endOfDay(
+        now.add(const Duration(days: 1)),
+      );
+    } else if (option == 'nextWeek') {
+      selectedDate = DateTimeService.endOfDay(
+        now.add(const Duration(days: 7)),
+      );
+    } else if (option == "maxLength"){
+      selectedDate = maximumDueDate;
+    } else {
+      final date = await showDatePicker(
+        context: context,
+        initialDate: currentDueDate ?? now,
+        firstDate: DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ),
+        lastDate: maximumDueDate ?? DateTime(now.year + 10),
+      );
+
+      if (date == null) {
+        return currentDueDate;
+      }
+
+      final time = await showTimePicker(
+        context: context,
+        initialTime: currentDueDate != null
+            ? TimeOfDay.fromDateTime(currentDueDate)
+            : TimeOfDay.now(),
+      );
+
+      if (time == null) {
+        return currentDueDate;
+      }
+
+      selectedDate = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
       );
     }
 
-    if (option == 'tomorrow') {
-      final tomorrow = now.add(
-        const Duration(days: 1),
+    // Si existe una fecha máxima, no podemos superarla.
+    if (maximumDueDate != null &&
+        selectedDate!.isAfter(maximumDueDate)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'The deadline cannot be later than the quest deadline.',
+          ),
+        ),
       );
 
-      return DateTime(
-        tomorrow.year,
-        tomorrow.month,
-        tomorrow.day,
-        23,
-        59,
-      );
-    }
-
-
-    if (option == 'nextWeek') {
-      final nextWeek = now.add(
-        const Duration(days: 7),
-      );
-
-      return DateTime(
-        nextWeek.year,
-        nextWeek.month,
-        nextWeek.day,
-        23,
-        59,
-      );
-    }
-
-    final date = await showDatePicker(
-      context: context,
-
-      initialDate: currentDueDate ?? now,
-
-      firstDate: DateTime(
-        now.year,
-        now.month,
-        now.day,
-      ),
-
-      lastDate: DateTime(
-        now.year + 10,
-      ),
-    );
-
-    // User cancelled date picker.
-    if (date == null) {
       return currentDueDate;
     }
 
-    // Choose time.
-    final time = await showTimePicker(
-      context: context,
-
-      initialTime: currentDueDate != null
-          ? TimeOfDay.fromDateTime(currentDueDate)
-          : TimeOfDay.now(),
-    );
-
-    // User cancelled time picker.
-    if (time == null) {
-      return currentDueDate;
-    }
-
-    return DateTime(
-      date.year,
-      date.month,
-      date.day,
-      time.hour,
-      time.minute,
-    );
-  }
-
-
-  String _formatDueDate(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final year = date.year.toString();
-
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-
-    return '$day/$month/$year $hour:$minute';
+    return selectedDate;
   }
 
   void _showTaskDialog(
       BuildContext context, {
+        DateTime? questDueDate,
         TaskModel? task,
         Function(TaskModel)? onTaskCreated,
         Function(TaskModel)? onTaskEdited,
@@ -576,57 +564,159 @@ class HomeScreen extends StatelessWidget {
       text: task?.title ?? "",
     );
 
+    // Fecha límite actual de la tarea, si estamos editándola.
+    DateTime? dueDate = task?.dueDate;
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(
-            task == null ? "New Task" : "Edit Task",
-          ),
-          content: TextField(
-            controller: titleController,
-            autofocus: true,
-            decoration: const InputDecoration(
-              labelText: "Title",
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("Cancel"),
-            ),
-
-            ElevatedButton(
-              onPressed: () {
-                final title = titleController.text.trim();
-
-                if (title.isEmpty) {
-                  return;
-                }
-
-                if (task == null) {
-                  // CREATE
-                  final newTask = TaskModel(
-                    title: title,
-                  );
-
-                  onTaskCreated?.call(newTask);
-                } else {
-                  // EDIT
-                  task.setTitle(title);
-
-                  onTaskEdited?.call(task);
-                }
-
-                Navigator.pop(context);
-              },
-              child: Text(
-                task == null ? "Create" : "Save",
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                task == null ? "New Task" : "Edit Task",
               ),
-            ),
-          ],
+
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // -------------------------
+                  // TÍTULO
+                  // -------------------------
+                  TextField(
+                    controller: titleController,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: "Title",
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // -------------------------
+                  // FECHA LÍMITE
+                  // -------------------------
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Due Date",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        print(questDueDate);
+                        final selectedDate =
+                        await _selectDueDate(
+                          context,
+                          dueDate,
+                          maximumDueDate: questDueDate,
+                        );
+
+                        setState(() {
+                          dueDate = selectedDate;
+                        });
+                      },
+                      icon: const Icon(Icons.calendar_today),
+                      label: Text(
+                        dueDate == null
+                            ? "No deadline"
+                            : DateTimeService.formatDateTime(
+                          dueDate!,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // -------------------------
+                  // FECHA DE LA QUEST
+                  // -------------------------
+                  if (questDueDate != null) ...[
+                    const SizedBox(height: 8),
+
+                    Text(
+                      "Quest deadline: "
+                          "${DateTimeService.formatDateTime(questDueDate)}",
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+
+              // -------------------------
+              // BOTONES
+              // -------------------------
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel"),
+                ),
+
+                ElevatedButton(
+                  onPressed: () {
+                    final title = titleController.text.trim();
+
+                    // El título no puede estar vacío.
+                    if (title.isEmpty) {
+                      return;
+                    }
+
+                    // La fecha de la tarea no puede superar
+                    // la fecha de la quest.
+                    if (questDueDate != null &&
+                        dueDate != null &&
+                        dueDate!.isAfter(questDueDate)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Task deadline cannot be later than the quest deadline.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // -------------------------
+                    // CREAR TASK
+                    // -------------------------
+                    if (task == null) {
+                      final newTask = TaskModel(
+                        title: title,
+                        dueDate: dueDate,
+                      );
+
+                      onTaskCreated?.call(newTask);
+                    }
+
+                    // -------------------------
+                    // EDITAR TASK
+                    // -------------------------
+                    else {
+                      task.setTitle(title);
+                      task.setDueDate(dueDate!);
+
+                      onTaskEdited?.call(task);
+                    }
+
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    task == null ? "Create" : "Save",
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
