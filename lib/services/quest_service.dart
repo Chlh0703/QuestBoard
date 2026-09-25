@@ -80,6 +80,12 @@ class QuestService extends ChangeNotifier {
     }
 
     if (newDueDate != null) {
+      for (final task in quest.tasks) {
+        if (task.dueDate != null &&
+            task.dueDate!.isAfter(newDueDate)) {
+          task.setDueDate(newDueDate);
+        }
+      }
       quest.setDueDate(newDueDate);
     }
 
