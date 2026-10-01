@@ -30,6 +30,9 @@ class QuestModel extends HiveObject {
   DateTime? _dueDate;
 
   @HiveField(7)
+  DateTime? _startDate;
+
+  @HiveField(8)
   List<TaskModel> _tasks;
 
   QuestModel({
@@ -39,8 +42,9 @@ class QuestModel extends HiveObject {
     this._completed = false,
     this._paused = true,
     this._classification = 0,
-    List<TaskModel>? tasks,
     this._dueDate,
+    this._startDate,
+    List<TaskModel>? tasks,
   }) : id = id ?? const Uuid().v4(),
         _tasks = tasks ?? [];
 
@@ -50,6 +54,7 @@ class QuestModel extends HiveObject {
   int get experienceReward => _experienceReward;
   int get classification => _classification;
   DateTime? get dueDate => _dueDate;
+  DateTime? get startDate => _startDate;
   List<TaskModel> get tasks => List.unmodifiable(_tasks);
 
 
@@ -75,6 +80,10 @@ class QuestModel extends HiveObject {
 
   void setDueDate(DateTime? newDueDate) {
     _dueDate = newDueDate;
+  }
+
+  void setStartDate(DateTime? newStartDate) {
+    _startDate = newStartDate;
   }
 
   void setTasks(List<TaskModel> newTasks){
@@ -111,15 +120,14 @@ class QuestModel extends HiveObject {
 
     if (taskTapped != null) {
       if (task.targetCount != null) {
-        final currentCount = task.currentCount ?? 0;
-        if (currentCount < task.targetCount!) {
-          task.setCurrentCount(currentCount + 1);
+        if (task.currentCount! < task.targetCount!) {
+          task.setCurrentCount(task.currentCount! + 1);
         }
-        if (currentCount == task.targetCount!){
-          task.changeCompletion();
+        if (task.currentCount! == task.targetCount!){
+          task.setCompletion(newCompletion: true);
         }
       } else {
-        task.changeCompletion();
+        task.setCompletion();
       }
       _completed = _tasks.isNotEmpty &&
           _tasks.every((task) => task.completed);
@@ -137,6 +145,7 @@ class QuestModel extends HiveObject {
       'paused': _paused,
       'classification': _classification,
       'dueDate': _dueDate?.toIso8601String(),
+      'startDate': _startDate?.toIso8601String(),
       'tasks': _tasks.map((task) {
         return {
           'id': task.id,
@@ -166,6 +175,7 @@ class QuestModel extends HiveObject {
         paused: map['paused'],
         classification: map['classification'] ?? 0,
         dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
+        startDate: map['startDate'] != null ? DateTime.parse(map['startDate']) : null,
         tasks: tasks
     );
   }

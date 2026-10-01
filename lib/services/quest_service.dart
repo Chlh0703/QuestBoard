@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:quest_board/models/task_model.dart';
 import 'package:quest_board/services/player_service.dart';
@@ -11,12 +13,21 @@ class QuestService extends ChangeNotifier {
   final PlayerService _playerService;
   final List<QuestModel> _quests = [];
 
+  Timer? _repeatTimer;
+
   QuestService(this._playerService);
 
   List<QuestModel> get quests => List.unmodifiable(_quests);
 
   Future<void> initialize() async {
     await loadQuests();
+    await _updateRepeatedQuests();
+    _repeatTimer = Timer.periodic(const Duration(minutes: 1),
+          (_) async {
+        await _updateRepeatedQuests();
+      },
+    );
+
   }
 
   Future<void> loadQuests() async {
@@ -24,6 +35,25 @@ class QuestService extends ChangeNotifier {
       ..clear()
       ..addAll(await _storage.loadQuests());
     notifyListeners();
+  }
+
+  Future<void> _updateRepeatedQuests() async {
+    for (final quest in _quests.where((q) => q.classification == 3)) {
+      final interval = quest.dueDate!.difference(
+        quest.startDate!,
+      );
+      final intervalsPassed = (DateTime.now().difference(quest.startDate!)).inDays ~/ interval.inDays;
+
+      if (intervalsPassed > 0) {
+        // _playerService.takeDamage(damage); TODO
+        print("time passed");
+
+        quest.setStartDate(quest.startDate!.add(interval * intervalsPassed),);
+
+        quest.setDueDate(quest.dueDate!.add(interval * intervalsPassed),);
+
+      }
+    }
   }
 
   Future<void> _saveAndSync() async {
@@ -51,7 +81,7 @@ class QuestService extends ChangeNotifier {
 
   Future<void> updateQuest(String questId, {
         // Quest
-        String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate,
+        String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate, DateTime? newStartDate,
         // Tasks
         List<TaskModel>? newTasks, String? taskId, String? newTaskTitle, bool? taskTapped,
       }) async {
@@ -87,6 +117,10 @@ class QuestService extends ChangeNotifier {
         }
       }
       quest.setDueDate(newDueDate);
+    }
+
+    if (newStartDate != null) {
+      quest.setStartDate(newStartDate);
     }
 
     // Tasks

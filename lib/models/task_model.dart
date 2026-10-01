@@ -42,19 +42,24 @@ class TaskModel extends HiveObject {
     _title = newTitle;
   }
 
-  void changeCompletion() {
-    _completed = !_completed;
+  void setCompletion({bool? newCompletion}) {
+    if (newCompletion != null) {
+      _completed = newCompletion;
+    }else {
+      _completed = !_completed;
+    }
+
   }
 
-  void setDueDate(DateTime newDueDate) {
+  void setDueDate(DateTime? newDueDate) {
     _dueDate = newDueDate;
   }
 
-  void setCurrentCount(int newCurrentCount){
+  void setCurrentCount(int? newCurrentCount){
     _currentCount = newCurrentCount;
   }
 
-  void setTargetCount(int newTargetCount){
+  void setTargetCount(int? newTargetCount){
     _targetCount = newTargetCount;
   }
 }

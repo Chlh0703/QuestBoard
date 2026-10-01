@@ -115,15 +115,20 @@ class HomeScreen extends StatelessWidget {
       text: quest?.experienceReward.toString() ?? "",
     );
 
-    // If editing, use the quest's current classification.
-    // If creating, default to Principal.
+    final repeatIntervalController = TextEditingController(
+      text: quest != null &&
+          quest.startDate != null &&
+          quest.dueDate != null
+          ? quest.dueDate!.difference(quest.startDate!).inDays.toString()
+          : "1",
+    );
+
     int classification = quest?.classification ?? 1;
 
-    // Current quest deadline.
+    DateTime? startDate = quest?.startDate ?? DateTimeService.startOfDay(DateTime.now());
+
     DateTime? dueDate = quest?.dueDate;
 
-    // Copy the current tasks so we don't modify the original
-    // Quest until the user presses Save.
     List<TaskModel> tasks = quest?.tasks
         .map(
           (task) => TaskModel(
@@ -131,6 +136,8 @@ class HomeScreen extends StatelessWidget {
             title: task.title,
             completed: task.completed,
             dueDate: task.dueDate,
+            currentCount: task.currentCount,
+            targetCount: task.targetCount,
       ),
     )
         .toList() ??
@@ -203,6 +210,11 @@ class HomeScreen extends StatelessWidget {
                             onSelected: (_) {
                               setState(() {
                                 classification = 3;
+                                dueDate = null;
+                                for (final task in tasks) {
+                                  task.setDueDate(null);
+                                }
+                                dueDate = null;
                               });
                             },
                           ),
@@ -248,6 +260,7 @@ class HomeScreen extends StatelessWidget {
                             onTap: () {
                               _showTaskDialog(
                                 context,
+                                questClassification: classification,
                                 questDueDate: quest?.dueDate,
                                 task: task,
                                 onTaskEdited: (_) {
@@ -273,6 +286,7 @@ class HomeScreen extends StatelessWidget {
                       onPressed: () {
                         _showTaskDialog(
                           context,
+                          questClassification: classification,
                           questDueDate: quest?.dueDate,
                           onTaskCreated: (task) {
                             setState(() {
@@ -304,37 +318,75 @@ class HomeScreen extends StatelessWidget {
 
                     // Due Date
 
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Due Date",
-                        style: Theme.of(context).textTheme.titleMedium,
+                    if (classification == 3) ...[
+                      Row(
+                        children: [
+                          const Text("Repeat every:"),
+
+                          const SizedBox(width: 12),
+
+                          SizedBox(
+                            width: 60,
+                            child: TextField(
+                              controller: repeatIntervalController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              textAlign: TextAlign.center,
+                              decoration: const InputDecoration(
+                                isDense: true,
+                              ),
+                              onChanged: (value) {
+                                final days = int.tryParse(value);
+
+                                if (days != null && days > 0) {
+                                  setState(() {
+                                    dueDate = startDate.add(Duration(days: days));
+                                  });
+                                }
+                              }
+                            ),
+                          ),
+
+                          const SizedBox(width: 8),
+
+                          const Text("Days"),
+                        ],
                       ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final selectedDate = await _selectDueDate(
-                            context,
-                            dueDate,
-                          );
-
-                          setState(() {
-                            dueDate = selectedDate;
-                          });
-                        },
-                        icon: const Icon(Icons.calendar_today),
-                        label: Text(
-                          dueDate == null
-                              ? "No deadline"
-                              : DateTimeService.formatDateTime(dueDate!),
+                    ] else ...[
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Due Date",
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
-                    ),
+
+                      const SizedBox(height: 8),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            final selectedDate = await _selectDueDate(
+                              context,
+                              dueDate,
+                            );
+
+                            setState(() {
+                              dueDate = selectedDate;
+                            });
+                          },
+                          icon: const Icon(Icons.calendar_today),
+                          label: Text(
+                            dueDate == null
+                                ? "No deadline"
+                                : DateTimeService.formatDateTime(dueDate!),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -390,6 +442,7 @@ class HomeScreen extends StatelessWidget {
                           classification: classification,
                           tasks: tasks,
                           dueDate: dueDate,
+                          startDate: DateTimeService.startOfDay(DateTime.now()),
                         ),
                       );
                     }
@@ -420,11 +473,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<DateTime?> _selectDueDate(
-      BuildContext context,
-      DateTime? currentDueDate, {
-        DateTime? maximumDueDate,
-      }) async {
+  Future<DateTime?> _selectDueDate(BuildContext context, DateTime? currentDueDate, {DateTime? maximumDueDate,}) async {
     final now = DateTime.now();
 
     final option = await showDialog<String>(
@@ -551,13 +600,7 @@ class HomeScreen extends StatelessWidget {
     return selectedDate;
   }
 
-  void _showTaskDialog(
-      BuildContext context, {
-        DateTime? questDueDate,
-        TaskModel? task,
-        Function(TaskModel)? onTaskCreated,
-        Function(TaskModel)? onTaskEdited,
-      }) {
+  void _showTaskDialog(BuildContext context, {required int questClassification, DateTime? questDueDate, TaskModel? task, Function(TaskModel)? onTaskCreated, Function(TaskModel)? onTaskEdited,}) {
     final titleController = TextEditingController(
       text: task?.title ?? "",
     );
@@ -588,9 +631,7 @@ class HomeScreen extends StatelessWidget {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // -------------------------
                   // TÍTULO
-                  // -------------------------
                   TextField(
                     controller: titleController,
                     autofocus: true,
@@ -601,23 +642,21 @@ class HomeScreen extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // -------------------------
                   // CONTADOR ACTUAL
-                  // -------------------------
-                  TextField(
-                    controller: currentCountController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: "Current Count",
-                      hintText: "Ej. 23",
+                  if (task != null) ... [
+                    TextField(
+                      controller: currentCountController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: "Current Count",
+                        hintText: "Ej. 23",
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                  ],
 
-                  // -------------------------
                   // OBJETIVO
-                  // -------------------------
                   TextField(
                     controller: targetCountController,
                     keyboardType: TextInputType.number,
@@ -629,68 +668,59 @@ class HomeScreen extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // -------------------------
                   // FECHA LÍMITE
-                  // -------------------------
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Due Date",
-                      style: Theme.of(context).textTheme.titleMedium,
+                  if (questClassification != 3) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Due Date",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 8),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        print(questDueDate);
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final selectedDate = await _selectDueDate(
+                            context,
+                            dueDate,
+                            maximumDueDate: questDueDate,
+                          );
 
-                        final selectedDate =
-                        await _selectDueDate(
-                          context,
-                          dueDate,
-                          maximumDueDate: questDueDate,
-                        );
-
-                        setState(() {
-                          dueDate = selectedDate;
-                        });
-                      },
-                      icon: const Icon(Icons.calendar_today),
-                      label: Text(
-                        dueDate == null
-                            ? "No deadline"
-                            : DateTimeService.formatDateTime(
-                          dueDate!,
+                          setState(() {
+                            dueDate = selectedDate;
+                          });
+                        },
+                        icon: const Icon(Icons.calendar_today),
+                        label: Text(
+                          dueDate == null
+                              ? "No deadline"
+                              : DateTimeService.formatDateTime(dueDate!),
                         ),
                       ),
                     ),
-                  ),
 
-                  // -------------------------
-                  // FECHA DE LA QUEST
-                  // -------------------------
-                  if (questDueDate != null) ...[
-                    const SizedBox(height: 8),
+                    // FECHA DE LA QUEST
+                    if (questDueDate != null) ...[
+                      const SizedBox(height: 8),
 
-                    Text(
-                      "Quest deadline: "
-                          "${DateTimeService.formatDateTime(questDueDate)}",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                      Text(
+                        "Quest deadline: "
+                            "${DateTimeService.formatDateTime(questDueDate)}",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ],
               ),
 
-              // -------------------------
               // BOTONES
-              // -------------------------
               actions: [
                 TextButton(
                   onPressed: () {
@@ -708,24 +738,20 @@ class HomeScreen extends StatelessWidget {
                       return;
                     }
 
-                    // -------------------------
                     // VALIDAR CONTADOR
-                    // -------------------------
 
                     final currentCount =
                     int.tryParse(
                       currentCountController.text.trim(),
-                    );
+                    ) ?? 0;
 
                     final targetCount =
                     int.tryParse(
                       targetCountController.text.trim(),
                     );
 
-                    // Si uno de los dos está rellenado,
-                    // ambos deben estarlo.
-                    if ((currentCount == null) !=
-                        (targetCount == null)) {
+                    // Target debe estar rellenado
+                    if ((targetCount == null)) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -736,22 +762,8 @@ class HomeScreen extends StatelessWidget {
                       return;
                     }
 
-                    // El contador actual no puede ser negativo.
-                    if (currentCount != null &&
-                        currentCount < 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Current Count cannot be negative.',
-                          ),
-                        ),
-                      );
-                      return;
-                    }
-
                     // El objetivo debe ser mayor que 0.
-                    if (targetCount != null &&
-                        targetCount <= 0) {
+                    if (targetCount <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -762,11 +774,8 @@ class HomeScreen extends StatelessWidget {
                       return;
                     }
 
-                    // El contador actual no puede superar
-                    // el objetivo.
-                    if (currentCount != null &&
-                        targetCount != null &&
-                        currentCount > targetCount) {
+                    // El contador actual no puede superar el objetivo.
+                    if (currentCount > targetCount) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -777,12 +786,7 @@ class HomeScreen extends StatelessWidget {
                       return;
                     }
 
-                    // -------------------------
                     // VALIDAR FECHA
-                    // -------------------------
-
-                    // La fecha de la tarea no puede superar
-                    // la fecha de la quest.
                     if (questDueDate != null &&
                         dueDate != null &&
                         dueDate!.isAfter(questDueDate)) {
@@ -796,9 +800,7 @@ class HomeScreen extends StatelessWidget {
                       return;
                     }
 
-                    // -------------------------
                     // CREAR TASK
-                    // -------------------------
                     if (task == null) {
                       final newTask = TaskModel(
                         title: title,
@@ -810,15 +812,13 @@ class HomeScreen extends StatelessWidget {
                       onTaskCreated?.call(newTask);
                     }
 
-                    // -------------------------
                     // EDITAR TASK
-                    // -------------------------
                     else {
                       task.setTitle(title);
-                      task.setDueDate(dueDate!);
+                      task.setDueDate(dueDate);
 
-                      task.setCurrentCount(currentCount!);
-                      task.setTargetCount(targetCount!);
+                      task.setCurrentCount(currentCount);
+                      task.setTargetCount(targetCount);
 
                       onTaskEdited?.call(task);
                     }
