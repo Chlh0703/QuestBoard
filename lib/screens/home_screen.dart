@@ -605,14 +605,16 @@ class HomeScreen extends StatelessWidget {
       text: task?.title ?? "",
     );
 
-    // Contador actual de la tarea.
     final currentCountController = TextEditingController(
       text: task?.currentCount?.toString() ?? "",
     );
 
-    // Objetivo total de la tarea.
     final targetCountController = TextEditingController(
       text: task?.targetCount?.toString() ?? "",
+    );
+
+    final descriptionController = TextEditingController(
+      text: task?.description ?? "",
     );
 
     // Fecha límite actual de la tarea, si estamos editándola.
@@ -716,6 +718,23 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ],
+
+                    const SizedBox(height: 8),
+
+                    // DESCRIPTION
+                    TextField(
+                      controller: descriptionController,
+                      minLines: 5,
+                      maxLines: 10,
+                      keyboardType: TextInputType.multiline,
+                      textAlignVertical: TextAlignVertical.top,
+                      decoration: const InputDecoration(
+                        labelText: "Description",
+                        alignLabelWithHint: true,
+                        border: OutlineInputBorder(),
+                        hintText: "Write a description...",
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -793,6 +812,8 @@ class HomeScreen extends StatelessWidget {
                       return;
                     }
 
+                    final description = descriptionController.text.trim();
+
                     // CREAR TASK
                     if (task == null) {
                       final newTask = TaskModel(
@@ -800,6 +821,7 @@ class HomeScreen extends StatelessWidget {
                         dueDate: dueDate,
                         currentCount: currentCount,
                         targetCount: targetCount,
+                        description: description
                       );
 
                       onTaskCreated?.call(newTask);

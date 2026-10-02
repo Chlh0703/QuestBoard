@@ -84,7 +84,7 @@ class QuestService extends ChangeNotifier {
         // Quest
         String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate, DateTime? newStartDate,
         // Tasks
-        List<TaskModel>? newTasks, String? taskId, String? newTaskTitle, bool? taskTapped,
+        List<TaskModel>? newTasks, String? taskId, String? newTaskTitle,DateTime? newTaskDueDate, int? newCurrentCount, int? newTargetCount, String? newDescription, bool? taskTapped,
       }) async {
     final quest = _quests.cast<QuestModel?>().firstWhere(
           (q) => q?.id == questId,
@@ -94,35 +94,22 @@ class QuestService extends ChangeNotifier {
     if (quest == null) return;
 
     // Quest
-    if (newTitle != null) {
-      quest.setTitle(newTitle);
-    }
+    if (newTitle != null) quest.setTitle(newTitle);
 
-    if (newExpReward != null) {
-      quest.setExperienceReward(newExpReward);
-    }
+    if (newExpReward != null) quest.setExperienceReward(newExpReward);
 
-    if (togglePause) {
-      quest.togglePaused();
-    }
+    if (togglePause) quest.togglePaused();
 
-    if (newClassification != null) {
-      quest.setClassification(newClassification);
-    }
+    if (newClassification != null) quest.setClassification(newClassification);
 
     if (newDueDate != null) {
       for (final task in quest.tasks) {
-        if (task.dueDate != null &&
-            task.dueDate!.isAfter(newDueDate)) {
-          task.setDueDate(newDueDate);
-        }
+        if (task.dueDate != null && task.dueDate!.isAfter(newDueDate)) task.setDueDate(newDueDate);
       }
       quest.setDueDate(newDueDate);
     }
 
-    if (newStartDate != null) {
-      quest.setStartDate(newStartDate);
-    }
+    if (newStartDate != null) quest.setStartDate(newStartDate);
 
     // Tasks
     if (newTasks != null) {
@@ -133,6 +120,10 @@ class QuestService extends ChangeNotifier {
       final completionChanged = quest.updateTask(
         taskId,
         newTitle: newTaskTitle,
+        newDueDate: newTaskDueDate,
+        newCurrentCount: newCurrentCount,
+        newTargetCount: newTargetCount,
+        newDescription: newDescription,
         taskTapped: taskTapped,
       );
 
