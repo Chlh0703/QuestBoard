@@ -25,4 +25,8 @@ class PlayerService extends ChangeNotifier {
     _saveAndSync();
   }
 
+  void takeDamage(int amount) {
+    _player?.addHp(-amount);
+  }
+
 }

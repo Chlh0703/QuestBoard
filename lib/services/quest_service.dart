@@ -25,9 +25,9 @@ class QuestService extends ChangeNotifier {
     _repeatTimer = Timer.periodic(const Duration(minutes: 1),
           (_) async {
         await _updateRepeatedQuests();
+        notifyListeners();
       },
     );
-
   }
 
   Future<void> loadQuests() async {
@@ -39,14 +39,15 @@ class QuestService extends ChangeNotifier {
 
   Future<void> _updateRepeatedQuests() async {
     for (final quest in _quests.where((q) => q.classification == 3)) {
+      if (quest.repeatEnd != null && quest.repeatEnd!.isBefore(DateTime.now())) print("Delete repeat, archive");
+
       final interval = quest.dueDate!.difference(
         quest.startDate!,
       );
       final intervalsPassed = (DateTime.now().difference(quest.startDate!)).inDays ~/ interval.inDays;
 
       if (intervalsPassed > 0) {
-        // _playerService.takeDamage(damage); TODO
-        print("time passed");
+        _playerService.takeDamage(1); // TODO: better damage value
 
         quest.setStartDate(quest.startDate!.add(interval * intervalsPassed),);
 

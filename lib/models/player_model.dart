@@ -37,7 +37,10 @@ class PlayerModel extends HiveObject {
   void addHp(int amount){
     currentHealth += amount;
     if (currentHealth > maxHealth) currentHealth = maxHealth;
-    if (currentHealth < 0) currentHealth = 0;
+    if (currentHealth < 0){
+      maxHealth = 1 + (level ~/ 5);
+      currentHealth = maxHealth;
+    }
     return;
   }
 
@@ -47,6 +50,8 @@ class PlayerModel extends HiveObject {
       while (experience >= experienceRequiredForNextLevel()) {
         experience -= experienceRequiredForNextLevel();
         level++;
+        maxHealth = 1 + (level ~/ 5);
+        currentHealth = maxHealth;
       }
       return;
     }

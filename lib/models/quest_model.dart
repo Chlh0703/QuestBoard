@@ -33,6 +33,9 @@ class QuestModel extends HiveObject {
   DateTime? _startDate;
 
   @HiveField(8)
+  DateTime? _repeatEnd;
+
+  @HiveField(9)
   List<TaskModel> _tasks;
 
   QuestModel({
@@ -44,6 +47,7 @@ class QuestModel extends HiveObject {
     this._classification = 0,
     this._dueDate,
     this._startDate,
+    this._repeatEnd,
     List<TaskModel>? tasks,
   }) : id = id ?? const Uuid().v4(),
         _tasks = tasks ?? [];
@@ -55,6 +59,7 @@ class QuestModel extends HiveObject {
   int get classification => _classification;
   DateTime? get dueDate => _dueDate;
   DateTime? get startDate => _startDate;
+  DateTime? get repeatEnd => _repeatEnd;
   List<TaskModel> get tasks => List.unmodifiable(_tasks);
 
 
@@ -84,6 +89,10 @@ class QuestModel extends HiveObject {
 
   void setStartDate(DateTime? newStartDate) {
     _startDate = newStartDate;
+  }
+
+  void setRepeatEnd(DateTime? newRepeatEnd) {
+    _repeatEnd = newRepeatEnd;
   }
 
   void setTasks(List<TaskModel> newTasks){
