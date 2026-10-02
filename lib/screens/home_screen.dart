@@ -740,30 +740,23 @@ class HomeScreen extends StatelessWidget {
 
                     // VALIDAR CONTADOR
 
-                    final currentCount =
+                    int? currentCount =
                     int.tryParse(
                       currentCountController.text.trim(),
                     ) ?? 0;
 
-                    final targetCount =
+                    int? targetCount =
                     int.tryParse(
                       targetCountController.text.trim(),
                     );
 
-                    // Target debe estar rellenado
-                    if ((targetCount == null)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Current Count and Target Count must both be filled.',
-                          ),
-                        ),
-                      );
-                      return;
+                    // Si uno esta relleno el otro tambien debe estar
+                    if (targetCount == null) {
+                      currentCount = null;
                     }
 
                     // El objetivo debe ser mayor que 0.
-                    if (targetCount <= 0) {
+                    if (targetCount != null && targetCount <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -775,7 +768,7 @@ class HomeScreen extends StatelessWidget {
                     }
 
                     // El contador actual no puede superar el objetivo.
-                    if (currentCount > targetCount) {
+                    if (currentCount != null && currentCount > targetCount!) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(

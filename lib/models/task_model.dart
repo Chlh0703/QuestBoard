@@ -23,6 +23,9 @@ class TaskModel extends HiveObject {
   @HiveField(5)
   int? _targetCount;
 
+  @HiveField(6)
+  String? _description;
+
   TaskModel({
     String? id,
     required this._title,
