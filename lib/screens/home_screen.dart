@@ -138,6 +138,7 @@ class HomeScreen extends StatelessWidget {
             dueDate: task.dueDate,
             currentCount: task.currentCount,
             targetCount: task.targetCount,
+            description: task.description
       ),
     )
         .toList() ??
@@ -616,6 +617,8 @@ class HomeScreen extends StatelessWidget {
     final descriptionController = TextEditingController(
       text: task?.description ?? "",
     );
+
+    print(task?.description);
 
     // Fecha límite actual de la tarea, si estamos editándola.
     DateTime? dueDate = task?.dueDate;

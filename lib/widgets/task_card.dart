@@ -48,58 +48,73 @@ class _TaskCardState extends State<TaskCard> {
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Row(
+          child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                widget.task.completed
-                    ? Icons.check_box
-                    : Icons.check_box_outline_blank,
-                color: widget.task.completed
-                    ? Colors.green
-                    : Colors.white,
-              ),
-
-              const SizedBox(width: 8),
-
-              Expanded(
-                child: Text(
-                  widget.task.title,
-                  style: TextStyle(
-                    color: widget.task.completed
-                        ? Colors.white54
-                        : Colors.white,
-                    decoration: widget.task.completed
-                        ? TextDecoration.lineThrough
-                        : TextDecoration.none,
-                  ),
-                ),
-              ),
-              if (widget.task.currentCount != null && widget.task.targetCount != null)
-                Text(
-                  '${widget.task.currentCount} / ${widget.task.targetCount}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+              Row(
+                children: [
+                  Icon(
+                    widget.task.completed
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
                     color: widget.task.completed
                         ? Colors.green
                         : Colors.white,
                   ),
-                ),
 
-              const SizedBox(width: 12),
+                  const SizedBox(width: 8),
 
-              if (widget.task.dueDate != null)
-                Text(
-                  DateTimeService.formatRemainingTime(widget.task.dueDate),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: widget.task.completed
-                        ? Colors.green
-                        : Colors.white,
+                  Expanded(
+                    child: Text(
+                      widget.task.title,
+                      style: TextStyle(
+                        color: widget.task.completed
+                            ? Colors.white54
+                            : Colors.white,
+                        decoration: widget.task.completed
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                      ),
+                    ),
                   ),
+                  if (widget.task.currentCount != null && widget.task.targetCount != null)
+                    Text(
+                      '${widget.task.currentCount} / ${widget.task.targetCount}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: widget.task.completed
+                            ? Colors.green
+                            : Colors.white,
+                      ),
+                    ),
+
+                  const SizedBox(width: 12),
+
+                  if (widget.task.dueDate != null)
+                    Text(
+                      DateTimeService.formatRemainingTime(widget.task.dueDate),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: widget.task.completed
+                            ? Colors.green
+                            : Colors.white,
+                      ),
+                    ),
+
+                  const SizedBox(height: 6),
+                ],
+              ),
+              const SizedBox(height: 6),
+              if (widget.task.description != null)
+                Text(widget.task.description!,
+                  style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
                 ),
-            ],
+                ),
+            ]
           ),
         ),
       ),

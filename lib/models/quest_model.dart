@@ -155,12 +155,16 @@ class QuestModel extends HiveObject {
       'classification': _classification,
       'dueDate': _dueDate?.toIso8601String(),
       'startDate': _startDate?.toIso8601String(),
+      'repeatEnd': _repeatEnd?.toIso8601String(),
       'tasks': _tasks.map((task) {
         return {
           'id': task.id,
           'title': task.title,
           'completed': task.completed,
           'dueDate': task.dueDate?.toIso8601String(),
+          'targetCount': task.targetCount,
+          'currentCount': task.currentCount,
+          'description': task.description,
         };
       }).toList(),
     };
@@ -174,6 +178,9 @@ class QuestModel extends HiveObject {
             title: task['title'],
             completed: task['completed'] ?? false,
             dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
+            targetCount: task['targetCount'],
+            currentCount: task['currentCount'],
+            description: task['description'],
       ),
     ).toList();
     return QuestModel(
@@ -185,6 +192,7 @@ class QuestModel extends HiveObject {
         classification: map['classification'] ?? 0,
         dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
         startDate: map['startDate'] != null ? DateTime.parse(map['startDate']) : null,
+        repeatEnd: map['repeatEnd'] != null ? DateTime.parse(map['repeatEnd']): null,
         tasks: tasks
     );
   }
