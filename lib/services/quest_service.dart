@@ -12,12 +12,15 @@ class QuestService extends ChangeNotifier {
   final StorageService _storage = StorageService();
   final PlayerService _playerService;
   final List<QuestModel> _quests = [];
+  final List<QuestModel> _archivedQuests = [];
+
 
   Timer? _repeatTimer;
 
   QuestService(this._playerService);
 
   List<QuestModel> get quests => List.unmodifiable(_quests);
+  List<QuestModel> get archivedQuests => List.unmodifiable(_archivedQuests);
 
   Future<void> initialize() async {
     await loadQuests();
@@ -31,23 +34,32 @@ class QuestService extends ChangeNotifier {
   }
 
   Future<void> loadQuests() async {
-    _quests
-      ..clear()
-      ..addAll(await _storage.loadQuests());
+    _quests..clear()..addAll(await _storage.loadQuests());
+    _archivedQuests..clear()..addAll(await _storage.loadArchivedQuests());
     notifyListeners();
   }
 
   Future<void> _updateRepeatedQuests() async {
     for (final quest in _quests.where((q) => q.classification == 3)) {
-      if (quest.repeatEnd != null && quest.repeatEnd!.isBefore(DateTime.now())) print("Delete repeat, archive");
+      if (quest.startDate == null || quest.dueDate == null) {
+        continue;
+      }
 
-      final interval = quest.dueDate!.difference(
-        quest.startDate!,
-      );
+      if (quest.repeatEnd != null && quest.repeatEnd!.isBefore(DateTime.now())){
+        archiveQuest(quest);
+        continue;
+      }
+
+      final interval = quest.dueDate!.difference(quest.startDate!,);
+
+      if (interval.inDays <= 0) { //TODO en un futuro mirar que se puedan hacer minutos horas y segundos
+        continue;
+      }
+
       final intervalsPassed = (DateTime.now().difference(quest.startDate!)).inDays ~/ interval.inDays;
 
       if (intervalsPassed > 0) {
-        _playerService.takeDamage(1); // TODO: better damage value
+        _playerService.takeDamage(1 * intervalsPassed); // TODO: better damage value
 
         quest.setStartDate(quest.startDate!.add(interval * intervalsPassed),);
 
@@ -59,6 +71,7 @@ class QuestService extends ChangeNotifier {
 
   Future<void> _saveAndSync() async {
     await _storage.saveQuests(_quests);
+    await _storage.saveArchivedQuests(_archivedQuests);
 
     // Refresca esta instancia del QuestService
     await loadQuests();
@@ -73,16 +86,33 @@ class QuestService extends ChangeNotifier {
     await _saveAndSync();
   }
 
-  Future<void> removeQuest(QuestModel quest) async {
+  Future<void> archiveQuest(QuestModel quest) async {
     if(_quests.contains(quest)){
+      _archivedQuests.add(quest);
+      print(_archivedQuests);
       _quests.remove(quest);
+      await _saveAndSync();
+    }
+  }
+
+  Future<void> restoreQuest(QuestModel quest) async {
+    if(_archivedQuests.contains(quest)){
+      _quests.add(quest);
+      print(_quests);
+      _archivedQuests.remove(quest);
+      await _saveAndSync();
+    }
+  }
+
+  Future<void> removeArchivedQuest(QuestModel quest) async {
+    if(_archivedQuests.remove(quest)){
       await _saveAndSync();
     }
   }
 
   Future<void> updateQuest(String questId, {
         // Quest
-        String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate, DateTime? newStartDate,
+        String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate, DateTime? newStartDate, DateTime? newRepeatEnd,
         // Tasks
         List<TaskModel>? newTasks, String? taskId, String? newTaskTitle,DateTime? newTaskDueDate, int? newCurrentCount, int? newTargetCount, String? newDescription, bool? taskTapped,
       }) async {
@@ -110,6 +140,8 @@ class QuestService extends ChangeNotifier {
     }
 
     if (newStartDate != null) quest.setStartDate(newStartDate);
+    
+    if (newRepeatEnd != null && newRepeatEnd.isAfter(quest.dueDate!)) quest.setRepeatEnd(newRepeatEnd);
 
     // Tasks
     if (newTasks != null) {

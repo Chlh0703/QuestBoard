@@ -51,12 +51,28 @@ class HomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      const Text(
-                        'QUESTS',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      // Título y botón de misiones archivadas
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'QUESTS',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          IconButton(
+                            tooltip: 'Archived quests',
+                            icon: const Icon(Icons.archive_outlined),
+                            onPressed: () {
+                              _showArchivedQuestsDialog(context);
+                            },
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 16),
@@ -81,11 +97,15 @@ class HomeScreen extends StatelessWidget {
                             );
                           },
 
-                          // Delete
-                          onQuestDelete: (quest) {
-                            questService.removeQuest(quest);
-                          },
+                          // Archive Quest
+                          onQuestArchive: (quest) {
+                            print('3. HomeScreen recibió la petición de archivar: ${quest.title}');
 
+                            questService.archiveQuest(quest);
+                          },
+                          onQuestDelete: (quest) {
+                            // questService.removeQuest(quest); TODO check later
+                            },
                           // Change Completion On Task
                           onTaskTap: (quest, task) {
                             questService.updateQuest(quest.id, taskId: task.id, taskTapped: true);
@@ -120,7 +140,7 @@ class HomeScreen extends StatelessWidget {
           quest.startDate != null &&
           quest.dueDate != null
           ? quest.dueDate!.difference(quest.startDate!).inDays.toString()
-          : "1",
+          : "",
     );
 
     int classification = quest?.classification ?? 1;
@@ -128,6 +148,8 @@ class HomeScreen extends StatelessWidget {
     DateTime? startDate = quest?.startDate ?? DateTimeService.startOfDay(DateTime.now());
 
     DateTime? dueDate = quest?.dueDate;
+
+    DateTime? repeatEnd = quest?.repeatEnd;
 
     List<TaskModel> tasks = quest?.tasks
         .map(
@@ -262,7 +284,7 @@ class HomeScreen extends StatelessWidget {
                               _showTaskDialog(
                                 context,
                                 questClassification: classification,
-                                questDueDate: quest?.dueDate,
+                                questDueDate: dueDate,
                                 task: task,
                                 onTaskEdited: (_) {
                                   setState(() {});
@@ -288,7 +310,7 @@ class HomeScreen extends StatelessWidget {
                         _showTaskDialog(
                           context,
                           questClassification: classification,
-                          questDueDate: quest?.dueDate,
+                          questDueDate: dueDate,
                           onTaskCreated: (task) {
                             setState(() {
                               tasks.add(task);
@@ -343,10 +365,12 @@ class HomeScreen extends StatelessWidget {
 
                                 if (days != null && days > 0) {
                                   setState(() {
-                                    dueDate = startDate.add(Duration(days: days));
+                                    dueDate = startDate.add(
+                                      Duration(days: days),
+                                    );
                                   });
                                 }
-                              }
+                              },
                             ),
                           ),
 
@@ -355,6 +379,40 @@ class HomeScreen extends StatelessWidget {
                           const Text("Days"),
                         ],
                       ),
+
+                      if (repeatIntervalController.text.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            const Text("Until:"),
+
+                            const SizedBox(width: 12),
+
+                            TextButton(
+                              onPressed: () async {
+                                final selectedDate = await showDatePicker(
+                                  context: context,
+                                  initialDate: repeatEnd ?? startDate,
+                                  firstDate: startDate,
+                                  lastDate: DateTime(2100),
+                                );
+
+                                if (selectedDate != null) {
+                                  setState(() {
+                                    repeatEnd = selectedDate;
+                                  });
+                                }
+                              },
+                              child: Text(
+                                repeatEnd != null
+                                    ? DateTimeService.formatDateTime(repeatEnd!)
+                                    : "Select date",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ] else ...[
                       Align(
                         alignment: Alignment.centerLeft,
@@ -617,9 +675,6 @@ class HomeScreen extends StatelessWidget {
     final descriptionController = TextEditingController(
       text: task?.description ?? "",
     );
-
-    print(task?.description);
-
     // Fecha límite actual de la tarea, si estamos editándola.
     DateTime? dueDate = task?.dueDate;
 
@@ -834,9 +889,9 @@ class HomeScreen extends StatelessWidget {
                     else {
                       task.setTitle(title);
                       task.setDueDate(dueDate);
-
                       task.setCurrentCount(currentCount);
                       task.setTargetCount(targetCount);
+                      task.setDescription(description);
 
                       onTaskEdited?.call(task);
                     }
@@ -846,6 +901,92 @@ class HomeScreen extends StatelessWidget {
                   child: Text(
                     task == null ? "Create" : "Save",
                   ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showArchivedQuestsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AnimatedBuilder(
+          animation: questService,
+          builder: (context, child) {
+            final archivedQuests = questService.archivedQuests;
+
+            return AlertDialog(
+              title: const Text('Archived Quests'),
+
+              content: SizedBox(
+                width: 400,
+                child: archivedQuests.isEmpty
+                    ? const Center(
+                  child: Text('No archived quests.'),
+                )
+                    : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: archivedQuests.length,
+                  itemBuilder: (context, index) {
+                    final quest = archivedQuests[index];
+
+                    return ListTile(
+                      leading: const Icon(Icons.archive),
+
+                      title: Text(quest.title),
+
+                      subtitle: Text(
+                        switch (quest.classification) {
+                          1 => 'Principal',
+                          2 => 'Secondary',
+                          3 => 'Repetitive',
+                          _ => 'Unknown',
+                        },
+                      ),
+
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Restaurar misión
+                          IconButton(
+                            tooltip: 'Restore Quest',
+                            icon: const Icon(
+                              Icons.unarchive_outlined,
+                              color: Colors.green,
+                            ),
+                            onPressed: () {
+                              questService.restoreQuest(quest);
+                            },
+                          ),
+
+                          // Eliminar permanentemente
+                          IconButton(
+                            tooltip: 'Delete permanently',
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
+                            onPressed: () async {
+                              await questService.removeArchivedQuest(quest);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                  },
+                  child: const Text('Close'),
                 ),
               ],
             );

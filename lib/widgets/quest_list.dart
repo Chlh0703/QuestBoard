@@ -9,6 +9,7 @@ class QuestList extends StatelessWidget {
   final Function(QuestModel) onTogglePause;
   final Function(QuestModel) onQuestEdit;
   final Function(QuestModel) onQuestDelete;
+  final Function(QuestModel) onQuestArchive;
   final Function(QuestModel, TaskModel) onTaskTap;
 
   const QuestList({
@@ -17,6 +18,7 @@ class QuestList extends StatelessWidget {
     required this.onTogglePause,
     required this.onQuestEdit,
     required this.onQuestDelete,
+    required this.onQuestArchive,
     required this.onTaskTap,
   });
 
@@ -104,8 +106,8 @@ class QuestList extends StatelessWidget {
                   onQuestDelete(quest);
                   },
                 onArchive: () {
-                  print("Archiving");
-                  }, // TODO:archive list
+                  onQuestArchive(quest);
+                  },
                 onTaskTap: (task) {
                   onTaskTap(quest, task);
                   },

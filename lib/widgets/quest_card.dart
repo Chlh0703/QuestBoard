@@ -119,10 +119,11 @@ class _QuestCardState extends State<QuestCard> {
                   icon: const Icon(Icons.edit),
                 ),
 
-                // Delete
+                // Archive Quest
                 IconButton(
-                  onPressed: widget.onDelete,
-                  icon: const Icon(Icons.delete),
+                  tooltip: 'Archive Quest',
+                  icon: const Icon(Icons.archive_outlined),
+                  onPressed: widget.onArchive,
                 ),
               ],
             ),

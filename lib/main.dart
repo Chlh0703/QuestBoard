@@ -31,6 +31,7 @@ void main() async {
   Hive.deleteBoxFromDisk(StorageService.questBoxName); Hive.deleteBoxFromDisk(StorageService.playerBoxName);
   await Hive.openBox<QuestModel>(StorageService.questBoxName);
   await Hive.openBox<PlayerModel>(StorageService.playerBoxName);
+  await Hive.openBox<QuestModel>(StorageService.archivedQuestBoxName);
 
   playerService = PlayerService();
   await playerService.initialize();
