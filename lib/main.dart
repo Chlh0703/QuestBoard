@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quest_board/models/player_model.dart';
+import 'package:quest_board/models/player_statistics.dart';
 import 'package:quest_board/services/overlay_quest_service.dart';
 import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/storage_service.dart';
@@ -28,10 +29,13 @@ void main() async {
   Hive.registerAdapter(QuestModelAdapter());
   Hive.registerAdapter(PlayerModelAdapter());
   Hive.registerAdapter(TaskModelAdapter());
+  Hive.registerAdapter(PlayerStatisticsAdapter());
   Hive.deleteBoxFromDisk(StorageService.questBoxName); Hive.deleteBoxFromDisk(StorageService.playerBoxName);
+  Hive.deleteBoxFromDisk(StorageService.archivedQuestBoxName);Hive.deleteBoxFromDisk(StorageService.statisticsBoxName);
   await Hive.openBox<QuestModel>(StorageService.questBoxName);
   await Hive.openBox<PlayerModel>(StorageService.playerBoxName);
   await Hive.openBox<QuestModel>(StorageService.archivedQuestBoxName);
+  await Hive.openBox<PlayerStatistics>(StorageService.statisticsBoxName);
 
   playerService = PlayerService();
   await playerService.initialize();

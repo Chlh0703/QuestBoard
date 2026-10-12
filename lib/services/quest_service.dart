@@ -60,11 +60,9 @@ class QuestService extends ChangeNotifier {
 
       if (intervalsPassed > 0) {
         _playerService.takeDamage(1 * intervalsPassed); // TODO: better damage value
-
         quest.setStartDate(quest.startDate!.add(interval * intervalsPassed),);
-
         quest.setDueDate(quest.dueDate!.add(interval * intervalsPassed),);
-
+        _saveAndSync();
       }
     }
   }
@@ -72,6 +70,7 @@ class QuestService extends ChangeNotifier {
   Future<void> _saveAndSync() async {
     await _storage.saveQuests(_quests);
     await _storage.saveArchivedQuests(_archivedQuests);
+    await _playerService.saveAndSync();
 
     // Refresca esta instancia del QuestService
     await loadQuests();
@@ -80,16 +79,15 @@ class QuestService extends ChangeNotifier {
     await WindowService.sendQuestsToOverlay(_quests);
   }
 
-
   Future<void> addQuest(QuestModel quest) async {
     _quests.add(quest);
+    _playerService.statistics.questsCreated++;
     await _saveAndSync();
   }
 
   Future<void> archiveQuest(QuestModel quest) async {
     if(_quests.contains(quest)){
       _archivedQuests.add(quest);
-      print(_archivedQuests);
       _quests.remove(quest);
       await _saveAndSync();
     }
@@ -161,14 +159,14 @@ class QuestService extends ChangeNotifier {
 
       if (completionChanged) {
         if (quest.completed) {
-          _playerService.addExperience(quest.experienceReward);
+          await _playerService.addExperience(quest.experienceReward);
+          _playerService.statistics.registerQuestCompleted(quest.classification, true);
         } else {
-          _playerService.addExperience(-quest.experienceReward);
+          await _playerService.addExperience(-quest.experienceReward);
+          _playerService.statistics.registerQuestCompleted(quest.classification, false);
         }
       }
     }
-
-
     await _saveAndSync();
   }
 }
