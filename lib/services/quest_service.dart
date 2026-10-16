@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:quest_board/models/task_model.dart';
+import 'package:quest_board/services/player_achievements.dart';
 import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/window_service.dart';
 
@@ -11,13 +12,15 @@ import '../models/quest_model.dart';
 class QuestService extends ChangeNotifier {
   final StorageService _storage = StorageService();
   final PlayerService _playerService;
+  final PlayerAchievements _playerAchievements;
+
   final List<QuestModel> _quests = [];
   final List<QuestModel> _archivedQuests = [];
 
 
   Timer? _repeatTimer;
 
-  QuestService(this._playerService);
+  QuestService(this._playerService, this._playerAchievements);
 
   List<QuestModel> get quests => List.unmodifiable(_quests);
   List<QuestModel> get archivedQuests => List.unmodifiable(_archivedQuests);
@@ -96,7 +99,6 @@ class QuestService extends ChangeNotifier {
   Future<void> restoreQuest(QuestModel quest) async {
     if(_archivedQuests.contains(quest)){
       _quests.add(quest);
-      print(_quests);
       _archivedQuests.remove(quest);
       await _saveAndSync();
     }
@@ -168,5 +170,7 @@ class QuestService extends ChangeNotifier {
       }
     }
     await _saveAndSync();
+
+    await _playerAchievements.checkAchievements();
   }
 }

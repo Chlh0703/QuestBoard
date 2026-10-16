@@ -1,6 +1,27 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:quest_board/models/player_statistics.dart';
+
+import '../models/player_statistics.dart';
+import '../services/player_service.dart';
+
+void showStatisticsDialog(
+    BuildContext context, {
+      required PlayerService playerService,
+    }) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AnimatedBuilder(
+        animation: playerService,
+        builder: (context, child) {
+          return StatisticsDialog(
+            statistics: playerService.statistics,
+          );
+        },
+      );
+    },
+  );
+}
 
 class StatisticsDialog extends StatelessWidget {
   final PlayerStatistics statistics;

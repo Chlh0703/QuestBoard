@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:quest_board/services/player_service.dart';
 
-import '../dialogs/due_date_dialog.dart';
-import '../models/quest_model.dart';
+import '../dialogs/achievements_dialog.dart';
+import '../services/player_achievements.dart';
 import '../widgets/player_stats.dart';
 import '../widgets/quest_list.dart';
 import '../services/quest_service.dart';
 import '../dialogs/statistics_dialog.dart';
 import '../dialogs/quest_dialog.dart';
 import '../dialogs/archived_quests_dialog.dart';
-import '../dialogs/statistics_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
   final QuestService questService;
   final PlayerService playerService;
+  final PlayerAchievements playerAchievements;
 
   const HomeScreen({
     super.key,
     required this.questService,
     required this.playerService,
+    required this.playerAchievements,
   });
 
   @override
@@ -55,15 +56,41 @@ class HomeScreen extends StatelessWidget {
 
                     Padding(
                       padding: const EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            _showStatisticsDialog(context);
-                          },
-                          icon: const Icon(Icons.pie_chart_outline),
-                          label: const Text('Statistics'),
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Statistics
+                          IconButton(
+                            tooltip: 'Statistics',
+                            onPressed: () {
+                              showStatisticsDialog(context, playerService: playerService,);
+                            },
+                            icon: const Icon(Icons.bar_chart),
+                            iconSize: 28,
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black87,
+                              fixedSize: const Size(56, 56),
+                            ),
+                          ),
+
+                          const SizedBox(width: 16),
+
+                          // Achievements
+                          IconButton(
+                            tooltip: 'Achievements',
+                            onPressed: () {
+                              showAchievementsDialog(context, playerAchievements: playerAchievements,);
+                            },
+                            icon: const Icon(Icons.emoji_events_outlined),
+                            iconSize: 28,
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.amber.shade800,
+                              fixedSize: const Size(56, 56),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -126,12 +153,10 @@ class HomeScreen extends StatelessWidget {
 
                           // Archive Quest
                           onQuestArchive: (quest) {
-                            print('3. HomeScreen recibió la petición de archivar: ${quest.title}');
-
                             questService.archiveQuest(quest);
                           },
                           onQuestDelete: (quest) {
-                            // questService.removeQuest(quest); TODO check later
+                             questService.removeArchivedQuest(quest);
                             },
                           // Change Completion On Task
                           onTaskTap: (quest, task) {
@@ -145,22 +170,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  void _showStatisticsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AnimatedBuilder(
-          animation: playerService,
-          builder: (context, child) {
-            return StatisticsDialog(
-              statistics: playerService.statistics,
-            );
-          },
         );
       },
     );

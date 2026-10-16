@@ -1,15 +1,17 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quest_board/models/player_statistics.dart';
+import 'package:quest_board/services/player_achievements.dart';
 
 import '../models/quest_model.dart';
 import '../models/player_model.dart';
+import '../models/task_model.dart';
 
 class StorageService {
-
   static const String questBoxName = "quests";
   static const String archivedQuestBoxName = "archived_quests";
   static const String playerBoxName = 'player';
   static const String statisticsBoxName = 'statistics';
+  static const String achievementBoxName = 'achievement_states';
 
   Box<QuestModel> get _questBox =>
       Hive.box<QuestModel>(questBoxName);
@@ -20,8 +22,27 @@ class StorageService {
   Box<PlayerModel> get _playerBox =>
       Hive.box<PlayerModel>(playerBoxName);
 
-  Box<PlayerStatistics> get _statisticsBoxName =>
+  Box<PlayerStatistics> get _statisticsBox =>
       Hive.box<PlayerStatistics>(statisticsBoxName);
+
+  Box get _achievementBox =>
+      Hive.box(achievementBoxName);
+
+  static Future<void> initialize() async {
+    await Hive.initFlutter();
+
+    if (!Hive.isAdapterRegistered(1)) Hive.registerAdapter(QuestModelAdapter());
+    if (!Hive.isAdapterRegistered(2)) Hive.registerAdapter(PlayerModelAdapter());
+    if (!Hive.isAdapterRegistered(3)) Hive.registerAdapter(TaskModelAdapter());
+    if (!Hive.isAdapterRegistered(4)) Hive.registerAdapter(PlayerStatisticsAdapter());
+
+    await Hive.openBox<QuestModel>(questBoxName);
+    await Hive.openBox<PlayerModel>(playerBoxName);
+    await Hive.openBox<QuestModel>(archivedQuestBoxName);
+    await Hive.openBox<PlayerStatistics>(statisticsBoxName);
+    await Hive.openBox(achievementBoxName);
+  }
+
 
   Future<List<QuestModel>> loadQuests() async {
     return _questBox.values.toList();
@@ -61,35 +82,51 @@ class StorageService {
   }
 
   Future<PlayerStatistics?> loadStatistics() async {
-    return _statisticsBoxName.get('player_statistics');
+    return _statisticsBox.get('player_statistics');
   }
 
   Future<void> saveStatistics(PlayerStatistics statistics) async {
-    await _statisticsBoxName.clear();
-    await _statisticsBoxName.put('player_statistics', statistics);
+    await _statisticsBox.clear();
+    await _statisticsBox.put('player_statistics', statistics);
   }
 
+  // Recupera el estado guardado de un achievement.
+  Map<dynamic, dynamic>? loadAchievementState(String id) {
+    final box = Hive.box(achievementBoxName);
 
-  Future<void> clearDatabase() async {
-    if (Hive.isBoxOpen(questBoxName)) {
-      await Hive.box<QuestModel>(questBoxName).close();
+    final data = box.get(id);
+
+    if (data is Map) {
+      return data;
     }
 
-    if (Hive.isBoxOpen(archivedQuestBoxName)) {
-      await Hive.box<QuestModel>(archivedQuestBoxName).close();
-    }
+    return null;
+  }
 
-    if (Hive.isBoxOpen(playerBoxName)) {
-      await Hive.box(playerBoxName).close();
-    }
+  // Guarda el estado de un achievement.
+  Future<void> saveAchievementState(
+      String id, {
+        required bool unlocked,
+        DateTime? unlockedAt,
+      }) async {
 
-    if (Hive.isBoxOpen(statisticsBoxName)) {
-      await Hive.box(statisticsBoxName).close();
-    }
+    await _achievementBox.put(id, {
+      'unlocked': unlocked,
+      'unlockedAt': unlockedAt?.toIso8601String(),
+    });
+  }
+
+  static Future<void> clearDatabase() async {
+    await Hive.box<QuestModel>(questBoxName).close();
+    await Hive.box<QuestModel>(archivedQuestBoxName).close();
+    await Hive.box<PlayerModel>(playerBoxName).close();
+    await Hive.box<PlayerStatistics>(statisticsBoxName).close();
+    await Hive.box(achievementBoxName).close();
 
     await Hive.deleteBoxFromDisk(questBoxName);
     await Hive.deleteBoxFromDisk(archivedQuestBoxName);
     await Hive.deleteBoxFromDisk(playerBoxName);
     await Hive.deleteBoxFromDisk(statisticsBoxName);
+    await Hive.deleteBoxFromDisk(achievementBoxName);
   }
 }

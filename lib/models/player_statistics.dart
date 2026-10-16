@@ -30,7 +30,6 @@ class PlayerStatistics {
       completedQuestsByType[index]++;
     } else if (completedQuestsByType[index] > 0) {
       completedQuestsByType[index]--;
-
     }
   }
 
