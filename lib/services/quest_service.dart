@@ -80,6 +80,8 @@ class QuestService extends ChangeNotifier {
 
     // Envía el estado actualizado al Overlay
     await WindowService.sendQuestsToOverlay(_quests);
+
+    notifyListeners();
   }
 
   Future<void> addQuest(QuestModel quest) async {
@@ -90,7 +92,8 @@ class QuestService extends ChangeNotifier {
 
   Future<void> archiveQuest(QuestModel quest) async {
     if(_quests.contains(quest)){
-      _archivedQuests.add(quest);
+      final questCopy = QuestModel.fromMap(quest.toMap());
+      _archivedQuests.add(questCopy);
       _quests.remove(quest);
       await _saveAndSync();
     }
@@ -98,7 +101,8 @@ class QuestService extends ChangeNotifier {
 
   Future<void> restoreQuest(QuestModel quest) async {
     if(_archivedQuests.contains(quest)){
-      _quests.add(quest);
+      final questCopy = QuestModel.fromMap(quest.toMap());
+      _quests.add(questCopy);
       _archivedQuests.remove(quest);
       await _saveAndSync();
     }
@@ -162,6 +166,7 @@ class QuestService extends ChangeNotifier {
       if (completionChanged) {
         if (quest.completed) {
           await _playerService.addExperience(quest.experienceReward);
+          if (!quest.paused) quest.togglePaused();
           _playerService.statistics.registerQuestCompleted(quest.classification, true);
         } else {
           await _playerService.addExperience(-quest.experienceReward);

@@ -16,13 +16,15 @@ class OverlayQuestList extends StatelessWidget { // Stateless widget: dadas no s
 
   @override
   Widget build(BuildContext context) { // Como se construye la "imagen"
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start, // El axis, en este caso pegado a la izquierda
-      children:
-        quests.where((quest) => !quest.paused).map((quest) => OverlayQuestCard(
-        quest: quest,
-        onTaskTap: onTaskTap,
-        )).toList(),
+    return SingleChildScrollView(
+        child :Column(
+          crossAxisAlignment: CrossAxisAlignment.start, // El axis, en este caso pegado a la izquierda
+          children:
+            quests.where((quest) => !quest.paused).map((quest) => OverlayQuestCard(
+            quest: quest,
+            onTaskTap: onTaskTap,
+            )).toList(),
+        ),
     );
   }
 }

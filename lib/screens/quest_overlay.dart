@@ -32,7 +32,6 @@ class QuestOverlay extends StatefulWidget { // Caso de stateful ya que hay dadas
 
 class _QuestOverlayState extends State<QuestOverlay> {
   Timer? _hideTimer; // instanciador del timer
-
   late VoidCallback _overlayListener;
 
   @override
@@ -121,6 +120,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
 
                             const Spacer(),
 
+                            // Botón apra reabrir main menu
                             IconButton(
                               onPressed: () {
                                 WindowService.sendToMain("showMainWindow", null);
@@ -133,10 +133,40 @@ class _QuestOverlayState extends State<QuestOverlay> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                        OverlayQuestList(
-                          quests: widget.overlayQuestService.quests,
-                          onTaskTap: _toggleTask,
+                        DefaultTabController(
+                          length: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TabBar(
+                                tabs: const [
+                                  Tab(text: 'P'),
+                                  Tab(text: 'S'),
+                                  Tab(text: 'R'),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                height: 160,
+                                child: TabBarView(
+                                  children: [
+                                    OverlayQuestList(
+                                      quests: widget.overlayQuestService.quests.where((x) => x.classification == 1).toList(),
+                                      onTaskTap: _toggleTask,
+                                    ),
+                                    OverlayQuestList(
+                                      quests: widget.overlayQuestService.quests.where((x) => x.classification == 2).toList(),
+                                      onTaskTap: _toggleTask,
+                                    ),
+                                    OverlayQuestList(
+                                      quests: widget.overlayQuestService.quests.where((x) => x.classification == 3).toList(),
+                                      onTaskTap: _toggleTask,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     )

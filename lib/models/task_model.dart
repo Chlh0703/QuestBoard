@@ -69,6 +69,6 @@ class TaskModel extends HiveObject {
   }
 
   void setDescription(String? newDescription){
-    _description = description;
+    _description = newDescription;
   }
 }
