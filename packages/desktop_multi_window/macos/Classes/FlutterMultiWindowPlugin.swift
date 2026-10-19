@@ -113,6 +113,31 @@ class MultiWindowManager: NSObject {
         let project = FlutterDartProject()
         project.dartEntrypointArguments = ["multi_window", windowId, config.arguments]
         let flutterViewController = FlutterViewController(project: project)
+
+        window.contentViewController = flutterViewController
+        window.acceptsMouseMovedEvents = true
+        window.setFrame(overlayFrame(), display: true)
+
+        var dragRegionView: OverlayDragRegionView?
+
+        if config.arguments.contains("\"overlay\"") {
+            let flutterView = flutterViewController.view
+            let dragView = OverlayDragRegionView(
+                frame: flutterView.bounds
+            )
+
+            dragView.autoresizingMask = [.width, .height]
+
+            flutterView.addSubview(
+                dragView,
+                positioned: .above,
+                relativeTo: nil
+            )
+
+            dragRegionView = dragView
+            window.level = .statusBar
+        }
+
         if config.arguments.contains("\"overlay\"") {
             flutterViewController.backgroundColor = .clear
 
@@ -142,17 +167,47 @@ class MultiWindowManager: NSObject {
                     window.ignoresMouseEvents = false
                     result(nil)
 
+                case "setDragRegion":
+                    guard
+                        let dragView = dragRegionView,
+                        let flutterView = dragView.superview,
+                        let args = call.arguments as? [String: Double],
+                        let x = args["x"],
+                        let y = args["y"],
+                        let width = args["width"],
+                        let height = args["height"],
+                        let viewWidth = args["viewWidth"],
+                        let viewHeight = args["viewHeight"],
+                        viewWidth > 0,
+                        viewHeight > 0
+                    else {
+                        result(FlutterError(
+                            code: "INVALID_DRAG_REGION",
+                            message: "Invalid drag region dimensions",
+                            details: nil
+                        ))
+                        return
+                    }
+
+                    // Convertimos las coordenadas de Flutter a coordenadas
+                    // de AppKit y cambiamos el origen vertical.
+                    let scaleX = flutterView.bounds.width / CGFloat(viewWidth)
+                    let scaleY = flutterView.bounds.height / CGFloat(viewHeight)
+
+                    dragView.dragRect = NSRect(
+                        x: CGFloat(x) * scaleX,
+                        y: flutterView.bounds.height
+                            - (CGFloat(y) + CGFloat(height)) * scaleY,
+                        width: CGFloat(width) * scaleX,
+                        height: CGFloat(height) * scaleY
+                    )
+
+                    result(nil)
+
                 default:
                     result(FlutterMethodNotImplemented)
                 }
             }
-        }
-        window.contentViewController = flutterViewController
-        window.acceptsMouseMovedEvents = true
-        window.setFrame(overlayFrame(), display: true)
-
-        if config.arguments.contains("\"overlay\"") {
-            window.level = .statusBar
         }
 
         window.makeKeyAndOrderFront(nil)
@@ -230,5 +285,24 @@ func overlayFrame() -> NSRect {
         width: width,
         height: height
     )
+}
+
+final class OverlayDragRegionView: NSView {
+    var dragRect: NSRect = .zero
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard dragRect.contains(point) else {
+            return nil
+        }
+        return self
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        guard let window = self.window else {
+            return
+        }
+
+        window.performDrag(with: event)
+    }
 }
 

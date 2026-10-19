@@ -5,6 +5,7 @@ import 'package:quest_board/services/overlay_controller.dart';
 import '../models/quest_model.dart';
 import '../models/task_model.dart';
 import '../services/overlay_quest_service.dart';
+import '../services/overlay_service.dart';
 import '../services/window_service.dart';
 import '../widgets/overlay_quest_list.dart';
 
@@ -31,6 +32,7 @@ class QuestOverlay extends StatefulWidget { // Caso de stateful ya que hay dadas
 }
 
 class _QuestOverlayState extends State<QuestOverlay> {
+  final GlobalKey _dragHandleKey = GlobalKey();
   Timer? _hideTimer; // instanciador del timer
   late VoidCallback _overlayListener;
 
@@ -79,11 +81,38 @@ class _QuestOverlayState extends State<QuestOverlay> {
     super.dispose();
   }
 
+  void _updateDragRegion() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !widget.overlayController.visible) return;
+
+      final context = _dragHandleKey.currentContext;
+      if (context == null) return;
+
+      final renderBox = context.findRenderObject() as RenderBox?;
+
+      if (renderBox == null || !renderBox.hasSize) return;
+
+      final position = renderBox.localToGlobal(Offset.zero);
+      final size = renderBox.size;
+      final screenSize = MediaQuery.sizeOf(context);
+
+      OverlayService.setDragRegion(
+        x: position.dx,
+        y: position.dy,
+        width: size.width,
+        height: size.height,
+        viewWidth: screenSize.width,
+        viewHeight: screenSize.height,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: widget.overlayQuestService,
       builder: (context, child) {
+        if (widget.overlayController.visible) _updateDragRegion();
         return Scaffold(
           backgroundColor: Colors.transparent,
           body: Listener(
@@ -107,14 +136,31 @@ class _QuestOverlayState extends State<QuestOverlay> {
                       children: [
                         Row(
                           children: [
-                            const Text(
-                              "BOARD",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+                            Expanded(
+                              child: Container(
+                                key: _dragHandleKey,
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.drag_indicator,
+                                      color: Colors.white70,
+                                      size: 20,
+                                    ),
+
+                                    SizedBox(width: 6),
+
+                                    Text(
+                                      "BOARD",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
 
