@@ -81,38 +81,11 @@ class _QuestOverlayState extends State<QuestOverlay> {
     super.dispose();
   }
 
-  void _updateDragRegion() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !widget.overlayController.visible) return;
-
-      final context = _dragHandleKey.currentContext;
-      if (context == null) return;
-
-      final renderBox = context.findRenderObject() as RenderBox?;
-
-      if (renderBox == null || !renderBox.hasSize) return;
-
-      final position = renderBox.localToGlobal(Offset.zero);
-      final size = renderBox.size;
-      final screenSize = MediaQuery.sizeOf(context);
-
-      OverlayService.setDragRegion(
-        x: position.dx,
-        y: position.dy,
-        width: size.width,
-        height: size.height,
-        viewWidth: screenSize.width,
-        viewHeight: screenSize.height,
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: widget.overlayQuestService,
       builder: (context, child) {
-        if (widget.overlayController.visible) _updateDragRegion();
         return Scaffold(
           backgroundColor: Colors.transparent,
           body: Listener(

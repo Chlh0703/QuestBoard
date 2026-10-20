@@ -5,7 +5,7 @@ public class FlutterMultiWindowPlugin: NSObject, FlutterPlugin {
 
     private let windowId: WindowId
     private let windowArgument: String
-    
+
 
     init(window: FlutterWindow) {
         self.windowId = window.windowId
@@ -68,7 +68,6 @@ public class FlutterMultiWindowPlugin: NSObject, FlutterPlugin {
         default:
             result(FlutterMethodNotImplemented)
         }
-
     }
 }
 
@@ -118,8 +117,6 @@ class MultiWindowManager: NSObject {
         window.acceptsMouseMovedEvents = true
         window.setFrame(overlayFrame(), display: true)
 
-        var dragRegionView: OverlayDragRegionView?
-
         if config.arguments.contains("\"overlay\"") {
             let flutterView = flutterViewController.view
             let dragView = OverlayDragRegionView(
@@ -133,8 +130,6 @@ class MultiWindowManager: NSObject {
                 positioned: .above,
                 relativeTo: nil
             )
-
-            dragRegionView = dragView
             window.level = .statusBar
         }
 
@@ -158,50 +153,12 @@ class MultiWindowManager: NSObject {
                 }
 
                 switch call.method {
-
                 case "enableClickThrough":
                     window.ignoresMouseEvents = true
                     result(nil)
 
                 case "disableClickThrough":
                     window.ignoresMouseEvents = false
-                    result(nil)
-
-                case "setDragRegion":
-                    guard
-                        let dragView = dragRegionView,
-                        let flutterView = dragView.superview,
-                        let args = call.arguments as? [String: Double],
-                        let x = args["x"],
-                        let y = args["y"],
-                        let width = args["width"],
-                        let height = args["height"],
-                        let viewWidth = args["viewWidth"],
-                        let viewHeight = args["viewHeight"],
-                        viewWidth > 0,
-                        viewHeight > 0
-                    else {
-                        result(FlutterError(
-                            code: "INVALID_DRAG_REGION",
-                            message: "Invalid drag region dimensions",
-                            details: nil
-                        ))
-                        return
-                    }
-
-                    // Convertimos las coordenadas de Flutter a coordenadas
-                    // de AppKit y cambiamos el origen vertical.
-                    let scaleX = flutterView.bounds.width / CGFloat(viewWidth)
-                    let scaleY = flutterView.bounds.height / CGFloat(viewHeight)
-
-                    dragView.dragRect = NSRect(
-                        x: CGFloat(x) * scaleX,
-                        y: flutterView.bounds.height
-                            - (CGFloat(y) + CGFloat(height)) * scaleY,
-                        width: CGFloat(width) * scaleX,
-                        height: CGFloat(height) * scaleY
-                    )
-
                     result(nil)
 
                 default:
@@ -288,21 +245,200 @@ func overlayFrame() -> NSRect {
 }
 
 final class OverlayDragRegionView: NSView {
-    var dragRect: NSRect = .zero
+    private let resizeThickness: CGFloat = 15
+    private let minimumWidth: CGFloat = 250
+    private let aspectRatio: CGFloat = 400.0 / 350.0
+
+    private let dragRegionHeight: CGFloat = 80
+    private let homeButtonWidth: CGFloat = 70
+
+    private var dragRect: NSRect {
+        NSRect(
+            x: bounds.minX,
+            y: bounds.maxY - dragRegionHeight,
+            width: bounds.width - homeButtonWidth,
+            height: dragRegionHeight
+        )
+    }
+
+    private var trackingArea: NSTrackingArea?
+
+    private struct ResizeEdges: OptionSet {
+        let rawValue: Int
+        static let left   = ResizeEdges(rawValue: 1 << 0)
+        static let right  = ResizeEdges(rawValue: 1 << 1)
+        static let bottom = ResizeEdges(rawValue: 1 << 2)
+        static let top    = ResizeEdges(rawValue: 1 << 3)
+    }
+
+    private var activeResizeEdges: ResizeEdges = []
+    private var initialWindowFrame: NSRect = .zero
+    private var initialMouseLocation: NSPoint = .zero
+
+    private func resizeEdges(at point: NSPoint) -> ResizeEdges {
+        var edges: ResizeEdges = []
+
+        if point.x <= bounds.minX + resizeThickness {edges.insert(.left)}
+        if point.x >= bounds.maxX - resizeThickness {edges.insert(.right)}
+        if point.y <= bounds.minY + resizeThickness {edges.insert(.bottom)}
+        if point.y >= bounds.maxY - resizeThickness {edges.insert(.top)}
+
+        return edges
+    }
 
     override func hitTest(_ point: NSPoint) -> NSView? {
-        guard dragRect.contains(point) else {
-            return nil
-        }
-        return self
+        // Prioridad
+        let localPoint = convert(point, from: superview)
+        if !resizeEdges(at: localPoint).isEmpty { return self }
+        if dragRect.contains(localPoint) { return self }
+        return nil
     }
 
     override func mouseDown(with event: NSEvent) {
-        guard let window = self.window else {
+        guard let window = self.window else { return }
+
+        let localPoint = convert(
+            event.locationInWindow,
+            from: nil
+        )
+
+        let edges = resizeEdges(at: localPoint)
+
+        if !edges.isEmpty {
+            activeResizeEdges = edges
+            initialWindowFrame = window.frame
+
+            initialMouseLocation = window.convertPoint(toScreen: event.locationInWindow)
             return
         }
 
-        window.performDrag(with: event)
+        if dragRect.contains(localPoint) {
+            window.performDrag(with: event)
+        }
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard
+            !activeResizeEdges.isEmpty,
+            let window = self.window
+        else {return}
+
+        NSCursor.closedHand.set()
+
+        let currentMouseLocation = window.convertPoint(
+            toScreen: event.locationInWindow
+        )
+
+        let deltaX = currentMouseLocation.x - initialMouseLocation.x
+        let deltaY = currentMouseLocation.y - initialMouseLocation.y
+
+        let initialWidth = initialWindowFrame.width
+
+        // Calculamos cuánto debería cambiar el tamaño.
+        var widthChange: CGFloat
+
+        let isCorner =
+            (activeResizeEdges.contains(.left) ||
+             activeResizeEdges.contains(.right)) &&
+            (activeResizeEdges.contains(.top) ||
+             activeResizeEdges.contains(.bottom))
+
+        if isCorner {
+            // En las esquinas, usamos el movimiento que más
+            // representa la intención del usuario.
+            let horizontalChange =
+                activeResizeEdges.contains(.left) ? -deltaX : deltaX
+
+            let verticalChange =
+                activeResizeEdges.contains(.bottom) ? -deltaY : deltaY
+
+            let widthChangeFromHeight = verticalChange * aspectRatio
+
+            if abs(horizontalChange) > abs(widthChangeFromHeight) {
+                widthChange = horizontalChange
+            } else {
+                widthChange = widthChangeFromHeight
+            }
+        } else if activeResizeEdges.contains(.left) ||
+                    activeResizeEdges.contains(.right) {
+            widthChange = activeResizeEdges.contains(.left)
+                ? -deltaX
+                : deltaX
+        } else {
+            let heightChange = activeResizeEdges.contains(.bottom)
+                ? -deltaY
+                : deltaY
+
+            widthChange = heightChange * aspectRatio
+        }
+
+        var newWidth = initialWidth + widthChange
+        var newHeight = newWidth / aspectRatio
+
+        if newWidth < minimumWidth {
+            newWidth = minimumWidth
+            newHeight = newWidth / aspectRatio
+        }
+
+        var newX = initialWindowFrame.minX
+        var newY = initialWindowFrame.minY
+
+        if activeResizeEdges.contains(.left) {
+            newX = initialWindowFrame.maxX - newWidth
+        }
+
+        if activeResizeEdges.contains(.bottom) {
+            newY = initialWindowFrame.maxY - newHeight
+        }
+
+        let newFrame = NSRect(
+            x: newX,
+            y: newY,
+            width: newWidth,
+            height: newHeight
+        )
+
+        window.setFrame(
+            newFrame,
+            display: true,
+            animate: false
+        )
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        activeResizeEdges = []
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+
+        if let trackingArea {
+            removeTrackingArea(trackingArea)
+        }
+
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+
+        addTrackingArea(area)
+        trackingArea = area
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        let edges = resizeEdges(at: point)
+
+        if edges.contains(.left) || edges.contains(.right) {
+            NSCursor.resizeLeftRight.set()
+        } else if edges.contains(.top) || edges.contains(.bottom) {
+            NSCursor.resizeUpDown.set()
+        } else if dragRect.contains(point) {
+            NSCursor.openHand.set()
+        }else {
+            NSCursor.arrow.set()
+        }
     }
 }
-
