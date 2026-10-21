@@ -1,8 +1,9 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:quest_board/services/hotkey_service.dart';
+
+import '../services/overlay_service.dart';
 
 
 void showConfigurationDialog(BuildContext context) {
@@ -26,6 +27,8 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
 
   late HotKeyModifier selectedModifier = defaultModifier;
   late PhysicalKeyboardKey selectedKey = defaultKey;
+
+  bool isAlwaysOnTop = true;
 
   final List<HotKeyModifier> modifiers = [
     HotKeyModifier.control,
@@ -61,6 +64,7 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
     super.initState();
     selectedModifier = HotkeyService.modifierKey;
     selectedKey = HotkeyService.mainKey;
+    isAlwaysOnTop = OverlayService.isAlwaysOnTop;
   }
   Future<void> saveConfiguration() async {
     try {
@@ -71,10 +75,12 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
 
       if (!mounted) return;
 
+      await OverlayService.setAlwaysOnTop(isAlwaysOnTop);
+
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Hotkey updated successfully'),
+          content: Text('Configuration updated successfully'),
         ),
       );
 
@@ -82,10 +88,12 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not register hotkey: $error'),
+          content: Text('$error'),
         ),
       );
     }
+
+
   }
 
   @override
@@ -181,11 +189,24 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
                   : selectedKey.debugName ?? selectedKey.toString()}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
+
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Always on top'),
+              subtitle: const Text(
+                'Keep the overlay above other windows.',
+              ),
+              value: isAlwaysOnTop,
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() {
+                  isAlwaysOnTop = value;
+                });
+              },
+            ),
           ],
         ),
       ),
-
-
 
       actions: [
         TextButton(

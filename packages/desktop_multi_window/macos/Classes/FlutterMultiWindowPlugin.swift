@@ -93,6 +93,61 @@ class MultiWindowManager: NSObject {
         let channel = registerMultiWindowChannel(window: flutterWindow, with: registrar)
         flutterWindow.setChannel(channel)
 
+        let mainChannel = FlutterMethodChannel(
+            name: "questboard/main",
+            binaryMessenger: registrar.messenger
+        )
+
+        mainChannel.setMethodCallHandler { call, result in
+            switch call.method {
+            case "setAlwaysOnTop":
+                guard let value = call.arguments as? Bool else {
+                    result(
+                        FlutterError(
+                            code: "INVALID_ARGUMENT",
+                            message: "Expected a Boolean argument",
+                            details: call.arguments
+                        )
+                    )
+                    return
+                }
+
+                DispatchQueue.main.async {
+                    var overlayFound = false
+
+                    for (_, flutterWindow) in MultiWindowManager.shared.windows {
+                        guard flutterWindow.window is OverlayWindow else {
+                            continue
+                        }
+
+                        flutterWindow.window.level =
+                            value ? .statusBar : .normal
+
+                        overlayFound = true
+
+                        NSLog(
+                            "QuestBoard: Overlay always on top = \(value)"
+                        )
+                    }
+
+                    if overlayFound {
+                        result(nil)
+                    } else {
+                        result(
+                            FlutterError(
+                                code: "OVERLAY_NOT_FOUND",
+                                message: "No overlay window was found",
+                                details: nil
+                            )
+                        )
+                    }
+                }
+
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+
         notifyWindowsChanged()
     }
 
@@ -130,7 +185,6 @@ class MultiWindowManager: NSObject {
                 positioned: .above,
                 relativeTo: nil
             )
-            window.level = .statusBar
         }
 
         if config.arguments.contains("\"overlay\"") {
@@ -142,7 +196,6 @@ class MultiWindowManager: NSObject {
             )
 
             overlayChannel.setMethodCallHandler { [weak window] call, result in
-
                 guard let window = window else {
                     result(FlutterError(
                         code: "NO_WINDOW",

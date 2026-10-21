@@ -13,7 +13,7 @@ class OverlayWindow: CustomWindow {
         backgroundColor = .clear
         hasShadow = false
 
-        level = .floating
+        level = .statusBar
 
         collectionBehavior = [
             .canJoinAllSpaces,
