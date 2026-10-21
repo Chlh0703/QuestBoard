@@ -124,10 +124,6 @@ class MultiWindowManager: NSObject {
                             value ? .statusBar : .normal
 
                         overlayFound = true
-
-                        NSLog(
-                            "QuestBoard: Overlay always on top = \(value)"
-                        )
                     }
 
                     if overlayFound {
