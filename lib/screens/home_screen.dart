@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quest_board/services/player_service.dart';
 
 import '../dialogs/achievements_dialog.dart';
+import '../dialogs/configuration_dialog.dart';
 import '../services/player_achievements.dart';
 import '../widgets/player_stats.dart';
 import '../widgets/quest_list.dart';
@@ -74,7 +75,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
 
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 14),
 
                           // Achievements
                           IconButton(
@@ -87,6 +88,22 @@ class HomeScreen extends StatelessWidget {
                             style: IconButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.amber.shade800,
+                              fixedSize: const Size(56, 56),
+                            ),
+                          ),
+
+                          const SizedBox(width: 14),
+
+                          IconButton(
+                            tooltip: 'Settings',
+                            onPressed: () {
+                              showConfigurationDialog(context);
+                            },
+                            icon: const Icon(Icons.settings),
+                            iconSize: 28,
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.grey.shade700,
                               fixedSize: const Size(56, 56),
                             ),
                           ),

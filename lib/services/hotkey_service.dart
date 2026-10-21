@@ -1,25 +1,41 @@
+import 'package:flutter/cupertino.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:flutter/services.dart';
 
-class HotkeyService {
+class HotkeyService extends ChangeNotifier {
   // Static significa que no cal rcear instancia, Future void esque es asincrona y no se espera nada a devolver
   // Guarda una funcion como variable (VoidCallback)
-  static Future<void> initialize({required VoidCallback showOverlay,}) async {
-    await hotKeyManager.unregisterAll(); // Elimina los atajos previos
-    final hotKey = HotKey(  // Definicion del botón que queremos hacer
-      key: PhysicalKeyboardKey.keyS,
-      modifiers: [
-        HotKeyModifier.control,
-      ],
-      scope: HotKeyScope.system, // Esto es para definir que funciona en el sistema completamente, aunque no tenga foco en el
-    );
+  static HotKeyModifier modifierKey = HotKeyModifier.control;
+  static PhysicalKeyboardKey mainKey = PhysicalKeyboardKey.keyS;
 
+  static VoidCallback? _showOverlay;
+
+  static Future<void> initialize({required VoidCallback showOverlay,}) async {
+    _showOverlay = showOverlay;
+    await _registerHotkey();
+  }
+
+  static Future<void> _registerHotkey() async {
+    await hotKeyManager.unregisterAll();
+    final hotKey = HotKey(
+      key: mainKey,
+      modifiers: [modifierKey],
+      scope: HotKeyScope.system,
+    );
     await hotKeyManager.register(
       hotKey,
       keyDownHandler: (_) {
-        showOverlay(); // Llama a la funcion que tiene guardada como variable ^
+        _showOverlay?.call();
       },
     );
   }
 
+  static Future<void> updateHotkey({
+    required HotKeyModifier modifier,
+    required PhysicalKeyboardKey key,
+  }) async {
+    modifierKey = modifier;
+    mainKey = key;
+    await _registerHotkey();
+  }
 }
