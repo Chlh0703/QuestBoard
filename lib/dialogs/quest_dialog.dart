@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quest_board/controllers/quest_controller.dart';
 
 import '../models/quest_model.dart';
 import '../models/task_model.dart';
@@ -11,7 +12,7 @@ import 'task_dialog.dart';
 
 void showQuestDialog(
     BuildContext context, {
-      required QuestService questService,
+      required QuestController questController,
       QuestModel? quest,
     }) {
   final titleController = TextEditingController(
@@ -255,7 +256,7 @@ void showQuestDialog(
 
                               if (days != null && days > 0) {
                                 setState(() {
-                                  dueDate = startDate!.add(
+                                  dueDate = startDate.add(
                                     Duration(days: days),
                                   );
                                 });
@@ -283,8 +284,8 @@ void showQuestDialog(
                             onPressed: () async {
                               final selectedDate = await showDatePicker(
                                 context: context,
-                                initialDate: repeatEnd ?? startDate!,
-                                firstDate: startDate!,
+                                initialDate: repeatEnd ?? startDate,
+                                firstDate: startDate,
                                 lastDate: DateTime(2100),
                               );
 
@@ -377,7 +378,7 @@ void showQuestDialog(
 
                   // Create quest
                   if (quest == null) {
-                    questService.addQuest(
+                    questController.addQuest(
                       QuestModel(
                         title: titleController.text.trim(),
                         experienceReward: experience,
@@ -389,7 +390,7 @@ void showQuestDialog(
                     );
                   } else {
                     // Edit quest
-                    questService.updateQuest(
+                    questController.updateQuest(
                       quest.id,
                       newTitle: titleController.text.trim(),
                       newExpReward: experience,

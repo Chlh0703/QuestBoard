@@ -127,7 +127,7 @@ class QuestModel extends HiveObject {
     final previousCompleted = _completed;
 
 
-    if (taskTapped != null) {
+    if (taskTapped == true) {
       if (task.targetCount != null) {
         if (task.currentCount! < task.targetCount!) {
           task.setCurrentCount(task.currentCount! + 1);
@@ -177,7 +177,7 @@ class QuestModel extends HiveObject {
             id: task['id'],
             title: task['title'],
             completed: task['completed'] ?? false,
-            dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
+            dueDate: task['dueDate'] != null ? DateTime.parse(task['dueDate']) : null,
             targetCount: task['targetCount'],
             currentCount: task['currentCount'],
             description: task['description'],

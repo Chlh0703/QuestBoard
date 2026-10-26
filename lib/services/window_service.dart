@@ -1,25 +1,33 @@
 import 'package:flutter/services.dart';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:quest_board/services/quest_overlay_notifier.dart';
 import 'package:quest_board/services/quest_service.dart';
 import 'package:window_manager/window_manager.dart';
 import '../models/quest_model.dart';
 import 'overlay_controller.dart';
 import 'overlay_quest_service.dart';
 
-class MainWindowListener extends WindowListener {
+class MainWindowListener extends WindowListener{
   @override
   void onWindowClose() async {
-    // Instead of destroying the window, hide it.
     await windowManager.hide();
   }
 }
 
-
-class WindowService {
+class WindowService implements QuestOverlayNotifier {
   static WindowController? _overlayWindow;
 
   static final MainWindowListener _mainWindowListener = MainWindowListener();
+
+  @override
+  Future<void> questsChanged(List<QuestModel> quests) async {
+    final data = quests.map((quest) => quest.toMap()).toList();
+    await _overlayWindow?.invokeMethod(
+      'questsChanged',
+      data,
+    );
+  }
 
   static Future<void> setupMainWindow() async {
     await windowManager.ensureInitialized();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quest_board/services/player_service.dart';
 
+import '../controllers/quest_controller.dart';
 import '../dialogs/achievements_dialog.dart';
 import '../dialogs/configuration_dialog.dart';
 import '../services/player_achievements.dart';
@@ -12,13 +13,13 @@ import '../dialogs/quest_dialog.dart';
 import '../dialogs/archived_quests_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
-  final QuestService questService;
+  final QuestController questController;
   final PlayerService playerService;
   final PlayerAchievements playerAchievements;
 
   const HomeScreen({
     super.key,
-    required this.questService,
+    required this.questController,
     required this.playerService,
     required this.playerAchievements,
   });
@@ -26,7 +27,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: questService,
+      animation: questController.listenable,
       builder: (context, child) {
         return Scaffold(
           backgroundColor: Colors.amberAccent,
@@ -35,8 +36,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               showQuestDialog(
                 context,
-                questService: questService,
-
+                questController: questController,
               );
             },
             child: const Icon(Icons.add),
@@ -139,7 +139,7 @@ class HomeScreen extends StatelessWidget {
                             tooltip: 'Archived quests',
                             icon: const Icon(Icons.archive_outlined),
                             onPressed: () {
-                              showArchivedQuestsDialog(context, questService: questService);
+                              showArchivedQuestsDialog(context, questController: questController);
                             },
                           ),
                         ],
@@ -149,11 +149,11 @@ class HomeScreen extends StatelessWidget {
 
                       Expanded(
                         child: QuestList(
-                          quests: questService.quests,
+                          quests: questController.quests,
 
                           // Pause / resume
                           onTogglePause: (quest) {
-                            questService.updateQuest(
+                            questController.updateQuest(
                               quest.id,
                               togglePause: true,
                             );
@@ -163,21 +163,21 @@ class HomeScreen extends StatelessWidget {
                           onQuestEdit: (quest) {
                             showQuestDialog(
                               context,
-                              questService: questService,
+                              questController: questController,
                               quest: quest,
                             );
                           },
 
                           // Archive Quest
                           onQuestArchive: (quest) {
-                            questService.archiveQuest(quest);
+                            questController.archiveQuest(quest);
                           },
                           onQuestDelete: (quest) {
-                             questService.removeArchivedQuest(quest);
+                             questController.removeArchivedQuest(quest);
                             },
                           // Change Completion On Task
                           onTaskTap: (quest, task) {
-                            questService.updateQuest(quest.id, taskId: task.id, taskTapped: true);
+                            questController.updateQuest(quest.id, taskId: task.id, taskTapped: true);
                           },
                         ),
                       ),

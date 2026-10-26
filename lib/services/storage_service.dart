@@ -1,6 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quest_board/models/player_statistics.dart';
-import 'package:quest_board/services/player_achievements.dart';
 
 import '../models/quest_model.dart';
 import '../models/player_model.dart';
@@ -28,7 +27,7 @@ class StorageService {
   Box get _achievementBox =>
       Hive.box(achievementBoxName);
 
-  static Future<void> initialize() async {
+  Future<void> initialize() async {
     await Hive.initFlutter();
 
     if (!Hive.isAdapterRegistered(1)) Hive.registerAdapter(QuestModelAdapter());
@@ -116,7 +115,7 @@ class StorageService {
     });
   }
 
-  static Future<void> clearDatabase() async {
+  Future<void> clearDatabase() async {
     await Hive.box<QuestModel>(questBoxName).close();
     await Hive.box<QuestModel>(archivedQuestBoxName).close();
     await Hive.box<PlayerModel>(playerBoxName).close();

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:quest_board/models/player_model.dart';
-import 'package:quest_board/models/player_statistics.dart';
+import 'package:quest_board/controllers/quest_controller.dart';
+import 'package:quest_board/repositories/hive_quest_repository.dart';
 import 'package:quest_board/services/overlay_quest_service.dart';
 import 'package:quest_board/services/player_achievements.dart';
 import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/storage_service.dart';
-import 'package:quest_board/models/task_model.dart';
 
-import 'models/quest_model.dart';
 import 'services/quest_service.dart';
 import 'services/overlay_controller.dart';
 import 'services/window_service.dart';
@@ -17,33 +14,30 @@ import 'services/hotkey_service.dart';
 import 'apps/quest_board_app.dart';
 import 'apps/overlay_app.dart';
 
-
-late final QuestService questService; // Late es basicamente un "prometo que tendrá valor" xD
-late final PlayerService playerService;
-late final PlayerAchievements playerAchievements;
-late final OverlayQuestService overlayQuestService;
-
-final overlayController = OverlayController();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await StorageService.initialize();
-  // For some test reasons:
-  // await StorageService.clearDatabase();
-  // await StorageService.initialize();
+  final storageService = StorageService();
+  await storageService.initialize();
+  final questRepository = HiveQuestRepository(storageService);
 
-  playerService = PlayerService();
+  // For some test reasons:
+  // await questRepository.clearAll();
+
+  final playerService = PlayerService();
   await playerService.initialize();
 
-  playerAchievements = PlayerAchievements(statistics: playerService.statistics);
-  playerAchievements.initialize();
+  final playerAchievements = PlayerAchievements(statistics: playerService.statistics);
+  await playerAchievements.initialize();
 
-  questService = QuestService(playerService, playerAchievements);
+  final questService = QuestService(playerService, playerAchievements, overlayNotifier: WindowService(), questRepository: questRepository);
   await questService.initialize();
+  final QuestController questController = QuestController(questService);
 
+  final overlayController = OverlayController();
 
-  overlayQuestService = OverlayQuestService(questService.quests);
+  final overlayQuestService = OverlayQuestService(questService.quests);
+
 
   // Get the current window controller
   final windowController = await WindowController.fromCurrentEngine();
@@ -58,7 +52,7 @@ void main() async {
     await WindowService.setupMainWindow();
     await WindowService.createOverlayWindow();
     await WindowService.initializeMainReceiver(questService);
-  } else if (isOverlay) {
+  } else {
     await WindowService.initializeOverlayReceiver(
       overlayController,
       overlayQuestService,
@@ -68,6 +62,6 @@ void main() async {
   runApp(
     isOverlay
         ? OverlayApp(overlayQuestService: overlayQuestService, overlayController: overlayController)
-        : QuestBoardApp(questService: questService, playerService: playerService, playerAchievements: playerAchievements,),
+        : QuestBoardApp(questController: questController, playerService: playerService, playerAchievements: playerAchievements,),
   );
 }

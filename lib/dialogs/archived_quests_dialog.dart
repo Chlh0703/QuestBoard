@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-
-import '../models/quest_model.dart';
-import '../services/quest_service.dart';
+import 'package:quest_board/controllers/quest_controller.dart';
 
 void showArchivedQuestsDialog(
     BuildContext context, {
-      required QuestService questService,
+      required QuestController questController,
     }) {
   showDialog(
     context: context,
     builder: (dialogContext) {
       return AnimatedBuilder(
-        animation: questService,
+        animation: questController.listenable,
         builder: (context, child) {
-          final archivedQuests = questService.archivedQuests;
+          final archivedQuests = questController.archivedQuests;
 
           return AlertDialog(
             title: const Text('Archived Quests'),
@@ -53,8 +51,8 @@ void showArchivedQuestsDialog(
                             Icons.unarchive_outlined,
                             color: Colors.green,
                           ),
-                          onPressed: () {
-                            questService.restoreQuest(quest);
+                          onPressed: () async {
+                            await questController.restoreQuest(quest);
                           },
                         ),
 
@@ -65,9 +63,7 @@ void showArchivedQuestsDialog(
                             color: Colors.red,
                           ),
                           onPressed: () async {
-                            await questService.removeArchivedQuest(
-                              quest,
-                            );
+                            await questController.removeArchivedQuest(quest);
                           },
                         ),
                       ],

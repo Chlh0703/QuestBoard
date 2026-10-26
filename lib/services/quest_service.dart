@@ -4,13 +4,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:quest_board/models/task_model.dart';
 import 'package:quest_board/services/player_achievements.dart';
 import 'package:quest_board/services/player_service.dart';
-import 'package:quest_board/services/window_service.dart';
+import 'package:quest_board/services/quest_overlay_notifier.dart';
 
-import '../services/storage_service.dart';
+import '../repositories/quest_repository.dart';
 import '../models/quest_model.dart';
 
 class QuestService extends ChangeNotifier {
-  final StorageService _storage = StorageService();
+  final QuestOverlayNotifier _overlayNotifier;
+  final QuestRepository _questRepository;
   final PlayerService _playerService;
   final PlayerAchievements _playerAchievements;
 
@@ -20,7 +21,13 @@ class QuestService extends ChangeNotifier {
 
   Timer? _repeatTimer;
 
-  QuestService(this._playerService, this._playerAchievements);
+  QuestService(
+    this._playerService,
+    this._playerAchievements,
+    {
+      required this._overlayNotifier,
+      required this._questRepository,
+    });
 
   List<QuestModel> get quests => List.unmodifiable(_quests);
   List<QuestModel> get archivedQuests => List.unmodifiable(_archivedQuests);
@@ -31,14 +38,13 @@ class QuestService extends ChangeNotifier {
     _repeatTimer = Timer.periodic(const Duration(minutes: 1),
           (_) async {
         await _updateRepeatedQuests();
-        notifyListeners();
       },
     );
   }
 
   Future<void> loadQuests() async {
-    _quests..clear()..addAll(await _storage.loadQuests());
-    _archivedQuests..clear()..addAll(await _storage.loadArchivedQuests());
+    _quests..clear()..addAll(await _questRepository.getAll());
+    _archivedQuests..clear()..addAll(await _questRepository.getArchived());
     notifyListeners();
   }
 
@@ -65,21 +71,19 @@ class QuestService extends ChangeNotifier {
         _playerService.takeDamage(1 * intervalsPassed); // TODO: better damage value
         quest.setStartDate(quest.startDate!.add(interval * intervalsPassed),);
         quest.setDueDate(quest.dueDate!.add(interval * intervalsPassed),);
-        _saveAndSync();
+        await _saveAndSync();
       }
     }
   }
 
   Future<void> _saveAndSync() async {
-    await _storage.saveQuests(_quests);
-    await _storage.saveArchivedQuests(_archivedQuests);
+    await _questRepository.saveAll(_quests);
+    await _questRepository.saveArchived(_archivedQuests);
     await _playerService.saveAndSync();
 
-    // Refresca esta instancia del QuestService
-    await loadQuests();
-
-    // Envía el estado actualizado al Overlay
-    await WindowService.sendQuestsToOverlay(_quests);
+    await _overlayNotifier.questsChanged(
+      List.unmodifiable(_quests),
+    );
 
     notifyListeners();
   }
@@ -177,5 +181,11 @@ class QuestService extends ChangeNotifier {
     await _saveAndSync();
 
     await _playerAchievements.checkAchievements();
+  }
+
+  @override
+  void dispose() {
+    _repeatTimer?.cancel();
+    super.dispose();
   }
 }
