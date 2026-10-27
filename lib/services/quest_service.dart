@@ -18,7 +18,6 @@ class QuestService extends ChangeNotifier {
   final List<QuestModel> _quests = [];
   final List<QuestModel> _archivedQuests = [];
 
-
   Timer? _repeatTimer;
 
   QuestService(
@@ -46,6 +45,12 @@ class QuestService extends ChangeNotifier {
     _quests..clear()..addAll(await _questRepository.getAll());
     _archivedQuests..clear()..addAll(await _questRepository.getArchived());
     notifyListeners();
+  }
+
+  Future<void> syncOverlay() async {
+    await _overlayNotifier.questsChanged(
+      List.unmodifiable(_quests),
+    );
   }
 
   Future<void> _updateRepeatedQuests() async {
@@ -81,10 +86,7 @@ class QuestService extends ChangeNotifier {
     await _questRepository.saveArchived(_archivedQuests);
     await _playerService.saveAndSync();
 
-    await _overlayNotifier.questsChanged(
-      List.unmodifiable(_quests),
-    );
-
+    await syncOverlay();
     notifyListeners();
   }
 
@@ -122,7 +124,7 @@ class QuestService extends ChangeNotifier {
         // Quest
         String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate, DateTime? newStartDate, DateTime? newRepeatEnd,
         // Tasks
-        List<TaskModel>? newTasks, String? taskId, String? newTaskTitle,DateTime? newTaskDueDate, int? newCurrentCount, int? newTargetCount, String? newDescription, bool? taskTapped,
+        List<TaskModel>? newTasks, String? taskId,
       }) async {
     final quest = _quests.cast<QuestModel?>().firstWhere(
           (q) => q?.id == questId,
@@ -157,15 +159,7 @@ class QuestService extends ChangeNotifier {
       quest.setTasks(newTasks);
     } else if (taskId != null) {
       // Modificar una Task concreta
-      final completionChanged = quest.updateTask(
-        taskId,
-        newTitle: newTaskTitle,
-        newDueDate: newTaskDueDate,
-        newCurrentCount: newCurrentCount,
-        newTargetCount: newTargetCount,
-        newDescription: newDescription,
-        taskTapped: taskTapped,
-      );
+      final completionChanged = quest.taskTapped(taskId,);
 
       if (completionChanged) {
         if (quest.completed) {

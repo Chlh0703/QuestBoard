@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:quest_board/controllers/quest_controller.dart';
 import 'package:quest_board/services/quest_overlay_notifier.dart';
 import 'package:quest_board/services/quest_service.dart';
 import 'package:window_manager/window_manager.dart';
@@ -67,7 +68,7 @@ class WindowService implements QuestOverlayNotifier {
   }
 
 
-  static Future<void> initializeMainReceiver(QuestService questService) async {
+  static Future<void> initializeMainReceiver(QuestController questController) async {
     final controller = await WindowController.fromCurrentEngine();
     await controller.setWindowMethodHandler(
           (MethodCall call) async {
@@ -77,7 +78,7 @@ class WindowService implements QuestOverlayNotifier {
             await windowManager.focus();
             break;
           case "toggleTask":
-            questService.updateQuest(call.arguments["questId"], taskId: call.arguments["taskId"], taskTapped: true);
+            await questController.completeTask(call.arguments["questId"], call.arguments["taskId"]);
             break;
           default:
             return null;

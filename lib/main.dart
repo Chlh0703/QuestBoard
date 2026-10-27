@@ -17,6 +17,17 @@ import 'apps/overlay_app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  final windowController = await WindowController.fromCurrentEngine();
+  final isOverlay = windowController.arguments.contains("overlay");
+
+  if (isOverlay) {
+    await runOverlayWindow();
+  } else {
+    await runMainWindow();
+  }
+}
+
+Future<void> runMainWindow() async {
   final storageService = StorageService();
   await storageService.initialize();
   final questRepository = HiveQuestRepository(storageService);
@@ -27,41 +38,43 @@ void main() async {
   final playerService = PlayerService();
   await playerService.initialize();
 
-  final playerAchievements = PlayerAchievements(statistics: playerService.statistics);
+  final playerAchievements = PlayerAchievements(statistics: playerService.statistics,);
   await playerAchievements.initialize();
 
-  final questService = QuestService(playerService, playerAchievements, overlayNotifier: WindowService(), questRepository: questRepository);
+  final questService = QuestService(playerService, playerAchievements, overlayNotifier: WindowService(), questRepository: questRepository,);
   await questService.initialize();
-  final QuestController questController = QuestController(questService);
 
-  final overlayController = OverlayController();
+  final questController = QuestController(questService);
+  await HotkeyService.initialize(showOverlay: WindowService.showOverlay,);
 
-  final overlayQuestService = OverlayQuestService(questService.quests);
+  await WindowService.setupMainWindow();
+  await WindowService.createOverlayWindow();
+  await WindowService.initializeMainReceiver(questController);
 
-
-  // Get the current window controller
-  final windowController = await WindowController.fromCurrentEngine();
-  final args = windowController.arguments;
-  final isOverlay = args.contains("overlay");
-
-
-  if (!isOverlay) {
-    await HotkeyService.initialize(
-      showOverlay: WindowService.showOverlay,
-    );
-    await WindowService.setupMainWindow();
-    await WindowService.createOverlayWindow();
-    await WindowService.initializeMainReceiver(questService);
-  } else {
-    await WindowService.initializeOverlayReceiver(
-      overlayController,
-      overlayQuestService,
-    );
-  }
+  await questService.syncOverlay();
 
   runApp(
-    isOverlay
-        ? OverlayApp(overlayQuestService: overlayQuestService, overlayController: overlayController)
-        : QuestBoardApp(questController: questController, playerService: playerService, playerAchievements: playerAchievements,),
+    QuestBoardApp(
+      questController: questController,
+      playerService: playerService,
+      playerAchievements: playerAchievements,
+    ),
+  );
+}
+
+
+
+Future<void> runOverlayWindow() async {
+  final overlayController = OverlayController();
+  final overlayQuestService = OverlayQuestService([]);
+  await WindowService.initializeOverlayReceiver(
+    overlayController,
+    overlayQuestService,
+  );
+  runApp(
+    OverlayApp(
+      overlayQuestService: overlayQuestService,
+      overlayController: overlayController,
+    ),
   );
 }

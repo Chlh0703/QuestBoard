@@ -153,10 +153,7 @@ class HomeScreen extends StatelessWidget {
 
                           // Pause / resume
                           onTogglePause: (quest) {
-                            questController.updateQuest(
-                              quest.id,
-                              togglePause: true,
-                            );
+                            questController.resumePauseQuest(quest.id);
                           },
 
                           // Edit
@@ -177,7 +174,7 @@ class HomeScreen extends StatelessWidget {
                             },
                           // Change Completion On Task
                           onTaskTap: (quest, task) {
-                            questController.updateQuest(quest.id, taskId: task.id, taskTapped: true);
+                            questController.completeTask(quest.id, task.id);
                           },
                         ),
                       ),

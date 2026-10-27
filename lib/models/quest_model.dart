@@ -99,30 +99,13 @@ class QuestModel extends HiveObject {
     _tasks = newTasks;
   }
 
-  bool updateTask(String taskId,
-      { String? newTitle,
-        int? newCurrentCount,
-        int? newTargetCount,
-        DateTime? newDueDate,
-        String? newDescription,
-        bool? taskTapped}){
+  bool taskTapped(String taskId,){
     final task = _tasks.cast<TaskModel?>().firstWhere(
           (q) => q?.id == taskId,
       orElse: () => null,
     );
 
     if (task == null) return false;
-
-    // Quest
-    if (newTitle != null) task.setTitle(newTitle);
-
-    if (newCurrentCount != null) task.setCurrentCount(newCurrentCount);
-
-    if (newTargetCount != null) task.setTargetCount(newTargetCount);
-
-    if (newDueDate!= null) task.setDueDate(newDueDate);
-
-    if (newDescription != null) task.setDescription(newDescription);
 
     final previousCompleted = _completed;
 

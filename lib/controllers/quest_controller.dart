@@ -14,49 +14,53 @@ class QuestController {
 
   Listenable get listenable => _questService;
 
-  Future<void> addQuest(QuestModel quest) async {
-    await _questService.addQuest(quest);
+  Future<void> addQuest(QuestModel quest) {
+    return _questService.addQuest(quest);
   }
 
-  Future<void> togglePause(QuestModel quest) async {
-    await _questService.updateQuest(
+  Future<void> togglePause(QuestModel quest) {
+    return _questService.updateQuest(
       quest.id,
       togglePause: true,
     );
   }
 
   Future<void> updateQuest(String questId, {
-    // Quest
-    String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate, DateTime? newStartDate, DateTime? newRepeatEnd,
-    // Tasks
-    List<TaskModel>? newTasks, String? taskId, String? newTaskTitle, DateTime? newTaskDueDate, int? newCurrentCount, int? newTargetCount, String? newDescription, bool? taskTapped,
-  }) async {
-    await _questService.updateQuest(questId,
-      newTitle: newTitle, newExpReward: newExpReward, togglePause: togglePause, newClassification: newClassification, newDueDate: newDueDate, newStartDate: newStartDate, newRepeatEnd: newRepeatEnd,
-      newTasks: newTasks, taskId: taskId, newTaskTitle: newTaskTitle, newTaskDueDate: newTaskDueDate, newCurrentCount: newCurrentCount, newTargetCount: newTargetCount, newDescription: newDescription, taskTapped: taskTapped,
+    String? newTitle,
+    int? newExpReward,
+    int? newClassification,
+    DateTime? newDueDate,
+    DateTime? newRepeatEnd,
+    List<TaskModel>? newTasks
+  }) {
+    return _questService.updateQuest(questId,
+      newTitle: newTitle,
+      newExpReward: newExpReward,
+      newClassification:
+      newClassification,
+      newDueDate: newDueDate,
+      newRepeatEnd: newRepeatEnd,
+      newTasks: newTasks,
     );
   }
 
-  Future<void> archiveQuest(QuestModel quest) async {
-    await _questService.archiveQuest(quest);
+  Future<void> resumePauseQuest(String questId){
+    return _questService.updateQuest(questId, togglePause: true,);
   }
 
-  Future<void> restoreQuest(QuestModel quest) async {
-    await _questService.restoreQuest(quest);
+  Future<void> archiveQuest(QuestModel quest) {
+    return _questService.archiveQuest(quest);
   }
 
-  Future<void> removeArchivedQuest(QuestModel quest) async {
-    await _questService.removeArchivedQuest(quest);
+  Future<void> restoreQuest(QuestModel quest) {
+    return _questService.restoreQuest(quest);
   }
 
-  Future<void> completeTask(
-      QuestModel quest,
-      TaskModel task,
-      ) async {
-    await _questService.updateQuest(
-      quest.id,
-      taskId: task.id,
-      taskTapped: true,
-    );
+  Future<void> removeArchivedQuest(QuestModel quest) {
+    return _questService.removeArchivedQuest(quest);
+  }
+
+  Future<void> completeTask(String questId, String taskId,) {
+    return _questService.updateQuest(questId, taskId: taskId);
   }
 }
