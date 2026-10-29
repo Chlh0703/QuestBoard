@@ -5,6 +5,7 @@ import 'package:quest_board/models/task_model.dart';
 import 'package:quest_board/services/player_achievements.dart';
 import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/quest_overlay_notifier.dart';
+import 'package:quest_board/services/repeated_quest_service.dart';
 
 import '../repositories/quest_repository.dart';
 import '../models/quest_model.dart';
@@ -54,30 +55,25 @@ class QuestService extends ChangeNotifier {
   }
 
   Future<void> _updateRepeatedQuests() async {
-    for (final quest in _quests.where((q) => q.classification == 3)) {
+    final now = DateTime.now();
+
+    for (final quest in _quests.where((q) => q.classification == 3).toList()) {
       if (quest.startDate == null || quest.dueDate == null) {
         continue;
       }
 
-      if (quest.repeatEnd != null && quest.repeatEnd!.isBefore(DateTime.now())){
-        archiveQuest(quest);
+      if (RepeatedQuestService.shouldArchive(quest, now)){
+        await archiveQuest(quest);
         continue;
       }
 
-      final interval = quest.dueDate!.difference(quest.startDate!,);
+      final intervalsPassed = RepeatedQuestService.getMissedIntervals(quest, now);
 
-      if (interval.inDays <= 0) { //TODO en un futuro mirar que se puedan hacer minutos horas y segundos
-        continue;
-      }
+      if (intervalsPassed == 0) continue;
 
-      final intervalsPassed = (DateTime.now().difference(quest.startDate!)).inDays ~/ interval.inDays;
+      _playerService.takeDamage(intervalsPassed);
 
-      if (intervalsPassed > 0) {
-        _playerService.takeDamage(1 * intervalsPassed); // TODO: better damage value
-        quest.setStartDate(quest.startDate!.add(interval * intervalsPassed),);
-        quest.setDueDate(quest.dueDate!.add(interval * intervalsPassed),);
-        await _saveAndSync();
-      }
+      RepeatedQuestService.updateRepeatDates(quest, intervalsPassed,);
     }
   }
 

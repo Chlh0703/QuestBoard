@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:quest_board/services/hotkey_service.dart';
 
+import '../services/configuration_service.dart';
 import '../services/overlay_service.dart';
 
 
@@ -68,32 +69,28 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
   }
   Future<void> saveConfiguration() async {
     try {
-      await HotkeyService.updateHotkey(
-        modifier: selectedModifier,
-        key: selectedKey,
-      );
-
-      if (!mounted) return;
+      await ConfigurationService().updateHotkey(modifier: selectedModifier, key: selectedKey,);
 
       await OverlayService.setAlwaysOnTop(isAlwaysOnTop);
 
+      if (!mounted) return;
+
       Navigator.of(context).pop();
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Configuration updated successfully'),
         ),
       );
-
     } catch (error) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$error'),
+          content: Text(error.toString()),
         ),
       );
     }
-
-
   }
 
   @override

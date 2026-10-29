@@ -386,6 +386,7 @@ void showQuestDialog(
                         tasks: tasks,
                         dueDate: dueDate,
                         startDate: startDate,
+                        repeatEnd: repeatEnd,
                       ),
                     );
                   } else {
@@ -397,6 +398,7 @@ void showQuestDialog(
                       newClassification: classification,
                       newTasks: tasks,
                       newDueDate: dueDate,
+                      newRepeatEnd: repeatEnd,
                     );
                   }
 
