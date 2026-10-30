@@ -48,10 +48,8 @@ Future<void> runMainWindow() async {
   await HotkeyService.initialize(showOverlay: WindowService.showOverlay,);
 
   await WindowService.setupMainWindow();
-  await WindowService.createOverlayWindow();
   await WindowService.initializeMainReceiver(questController);
-
-  await questService.syncOverlay();
+  await WindowService.createOverlayWindow();
 
   runApp(
     QuestBoardApp(
@@ -70,6 +68,10 @@ Future<void> runOverlayWindow() async {
   await WindowService.initializeOverlayReceiver(
     overlayController,
     overlayQuestService,
+  );
+  await WindowService.sendToMain(
+    'overlayReady',
+    null,
   );
   runApp(
     OverlayApp(

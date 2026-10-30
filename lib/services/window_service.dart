@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:quest_board/controllers/quest_controller.dart';
 import 'package:quest_board/services/quest_overlay_notifier.dart';
-import 'package:quest_board/services/quest_service.dart';
 import 'package:window_manager/window_manager.dart';
 import '../models/quest_model.dart';
 import 'overlay_controller.dart';
@@ -73,6 +72,9 @@ class WindowService implements QuestOverlayNotifier {
     await controller.setWindowMethodHandler(
           (MethodCall call) async {
         switch (call.method) {
+          case 'overlayReady':
+            await questController.syncOverlay();
+            break;
           case "showMainWindow":
             await windowManager.show();
             await windowManager.focus();
@@ -133,18 +135,4 @@ class WindowService implements QuestOverlayNotifier {
       }
     }
   }
-
-  static Future<void> sendQuestsToOverlay(
-      List<QuestModel> quests,
-      ) async {
-    final data = quests
-        .map((q) => q.toMap())
-        .toList();
-
-    await _overlayWindow?.invokeMethod(
-      "questsChanged",
-      data,
-    );
-  }
-
 }

@@ -14,6 +14,10 @@ class QuestController {
 
   Listenable get listenable => _questService;
 
+  Future<void> syncOverlay() {
+    return _questService.syncOverlay();
+  }
+
   Future<void> addQuest(QuestModel quest) {
     return _questService.addQuest(quest);
   }
