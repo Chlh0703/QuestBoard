@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../screens/quest_overlay.dart';
-import '../services/overlay_controller.dart';
+import '../controllers/overlay_controller.dart';
 import '../services/overlay_quest_service.dart';
 
 class OverlayApp extends StatelessWidget {

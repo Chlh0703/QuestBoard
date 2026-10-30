@@ -18,7 +18,7 @@ class HiveQuestRepository implements QuestRepository {
   }
 
   @override
-  Future<void> saveAll(List<QuestModel> quests) {
+  Future<void> saveAllQuests(List<QuestModel> quests) {
     return _storage.saveQuests(quests);
   }
 

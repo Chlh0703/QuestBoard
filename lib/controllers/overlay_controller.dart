@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import 'overlay_service.dart';
+import '../services/overlay_service.dart';
 
 class OverlayController extends ChangeNotifier { // Controllador de overlay
   bool visible = false;

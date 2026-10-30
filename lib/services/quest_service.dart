@@ -78,7 +78,7 @@ class QuestService extends ChangeNotifier {
   }
 
   Future<void> _saveAndSync() async {
-    await _questRepository.saveAll(_quests);
+    await _questRepository.saveAllQuests(_quests);
     await _questRepository.saveArchived(_archivedQuests);
     await _playerService.saveAndSync();
 

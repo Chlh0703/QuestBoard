@@ -5,7 +5,7 @@ import 'package:quest_board/controllers/quest_controller.dart';
 import 'package:quest_board/services/quest_overlay_notifier.dart';
 import 'package:window_manager/window_manager.dart';
 import '../models/quest_model.dart';
-import 'overlay_controller.dart';
+import '../controllers/overlay_controller.dart';
 import 'overlay_quest_service.dart';
 
 class MainWindowListener extends WindowListener{
@@ -53,7 +53,6 @@ class WindowService implements QuestOverlayNotifier {
     );
   }
 
-
   static Future<void> createOverlayWindow() async {
     _overlayWindow = await WindowController.create(const WindowConfiguration(arguments: '{"window":"overlay"}', hiddenAtLaunch: true,),);
   }
@@ -65,7 +64,6 @@ class WindowService implements QuestOverlayNotifier {
   static Future<void> hideOverlay() async {
     await _overlayWindow?.invokeMethod("hideOverlay");
   }
-
 
   static Future<void> initializeMainReceiver(QuestController questController) async {
     final controller = await WindowController.fromCurrentEngine();

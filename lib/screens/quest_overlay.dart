@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:quest_board/services/overlay_controller.dart';
+import 'package:quest_board/controllers/overlay_controller.dart';
 import '../models/quest_model.dart';
 import '../models/task_model.dart';
 import '../services/overlay_quest_service.dart';

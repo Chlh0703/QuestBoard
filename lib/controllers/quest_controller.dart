@@ -22,13 +22,6 @@ class QuestController {
     return _questService.addQuest(quest);
   }
 
-  Future<void> togglePause(QuestModel quest) {
-    return _questService.updateQuest(
-      quest.id,
-      togglePause: true,
-    );
-  }
-
   Future<void> updateQuest(String questId, {
     String? newTitle,
     int? newExpReward,

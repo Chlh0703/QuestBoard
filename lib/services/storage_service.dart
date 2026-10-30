@@ -12,20 +12,11 @@ class StorageService {
   static const String statisticsBoxName = 'statistics';
   static const String achievementBoxName = 'achievement_states';
 
-  Box<QuestModel> get _questBox =>
-      Hive.box<QuestModel>(questBoxName);
-
-  Box<QuestModel> get _archivedQuestBox =>
-      Hive.box<QuestModel>(archivedQuestBoxName);
-
-  Box<PlayerModel> get _playerBox =>
-      Hive.box<PlayerModel>(playerBoxName);
-
-  Box<PlayerStatistics> get _statisticsBox =>
-      Hive.box<PlayerStatistics>(statisticsBoxName);
-
-  Box get _achievementBox =>
-      Hive.box(achievementBoxName);
+  Box<QuestModel> get _questBox => Hive.box<QuestModel>(questBoxName);
+  Box<QuestModel> get _archivedQuestBox => Hive.box<QuestModel>(archivedQuestBoxName);
+  Box<PlayerModel> get _playerBox => Hive.box<PlayerModel>(playerBoxName);
+  Box<PlayerStatistics> get _statisticsBox => Hive.box<PlayerStatistics>(statisticsBoxName);
+  Box get _achievementBox => Hive.box(achievementBoxName);
 
   Future<void> initialize() async {
     await Hive.initFlutter();
@@ -42,7 +33,6 @@ class StorageService {
     await Hive.openBox(achievementBoxName);
   }
 
-
   Future<List<QuestModel>> loadQuests() async {
     return _questBox.values.toList();
   }
@@ -52,7 +42,6 @@ class StorageService {
     await _questBox.addAll(quests);
   }
 
-
   Future<List<QuestModel>> loadArchivedQuests() async {
     return _archivedQuestBox.values.toList();
   }
@@ -61,7 +50,6 @@ class StorageService {
     await _archivedQuestBox.clear();
     await _archivedQuestBox.addAll(quests);
   }
-
 
   Future<PlayerModel> loadPlayer() async {
     final player = _playerBox.get('player');
@@ -89,7 +77,6 @@ class StorageService {
     await _statisticsBox.put('player_statistics', statistics);
   }
 
-  // Recupera el estado guardado de un achievement.
   Map<dynamic, dynamic>? loadAchievementState(String id) {
     final box = Hive.box(achievementBoxName);
 

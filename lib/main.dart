@@ -8,7 +8,7 @@ import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/storage_service.dart';
 
 import 'services/quest_service.dart';
-import 'services/overlay_controller.dart';
+import 'controllers/overlay_controller.dart';
 import 'services/window_service.dart';
 import 'services/hotkey_service.dart';
 import 'apps/quest_board_app.dart';
