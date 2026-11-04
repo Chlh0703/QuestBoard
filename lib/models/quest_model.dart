@@ -7,7 +7,6 @@ part 'quest_model.g.dart';
 
 @HiveType(typeId: 1)
 class QuestModel extends HiveObject {
-
   @HiveField(0)
   final String id;
 
@@ -50,7 +49,7 @@ class QuestModel extends HiveObject {
     this._repeatEnd,
     List<TaskModel>? tasks,
   }) : id = id ?? const Uuid().v4(),
-        _tasks = tasks ?? [];
+       _tasks = tasks ?? [];
 
   String get title => _title;
   bool get completed => _completed;
@@ -61,7 +60,6 @@ class QuestModel extends HiveObject {
   DateTime? get startDate => _startDate;
   DateTime? get repeatEnd => _repeatEnd;
   List<TaskModel> get tasks => List.unmodifiable(_tasks);
-
 
   void setTitle(String newTitle) {
     _title = newTitle;
@@ -75,7 +73,7 @@ class QuestModel extends HiveObject {
     _completed = !_completed;
   }
 
-  void togglePaused(){
+  void togglePaused() {
     _paused = !_paused;
   }
 
@@ -95,13 +93,13 @@ class QuestModel extends HiveObject {
     _repeatEnd = newRepeatEnd;
   }
 
-  void setTasks(List<TaskModel> newTasks){
+  void setTasks(List<TaskModel> newTasks) {
     _tasks = newTasks;
   }
 
-  bool taskTapped(String taskId,){
+  bool taskTapped(String taskId) {
     final task = _tasks.cast<TaskModel?>().firstWhere(
-          (q) => q?.id == taskId,
+      (q) => q?.id == taskId,
       orElse: () => null,
     );
 
@@ -109,21 +107,18 @@ class QuestModel extends HiveObject {
 
     final previousCompleted = _completed;
 
-
-    if (taskTapped == true) {
-      if (task.targetCount != null) {
-        if (task.currentCount! < task.targetCount!) {
-          task.setCurrentCount(task.currentCount! + 1);
-        }
-        if (task.currentCount! == task.targetCount!){
-          task.setCompletion(newCompletion: true);
-        }
-      } else {
-        task.setCompletion();
+    if (task.targetCount != null) {
+      if (task.currentCount! < task.targetCount!) {
+        task.setCurrentCount(task.currentCount! + 1);
       }
-      _completed = _tasks.isNotEmpty &&
-          _tasks.every((task) => task.completed);
+      if (task.currentCount! == task.targetCount!) {
+        task.setCompletion(newCompletion: true);
+      }
+    } else {
+      task.setCompletion();
     }
+
+    _completed = _tasks.isNotEmpty && _tasks.every((task) => task.completed);
 
     return previousCompleted != _completed;
   }
@@ -160,23 +155,30 @@ class QuestModel extends HiveObject {
             id: task['id'],
             title: task['title'],
             completed: task['completed'] ?? false,
-            dueDate: task['dueDate'] != null ? DateTime.parse(task['dueDate']) : null,
+            dueDate: task['dueDate'] != null
+                ? DateTime.parse(task['dueDate'])
+                : null,
             targetCount: task['targetCount'],
             currentCount: task['currentCount'],
             description: task['description'],
-      ),
-    ).toList();
+          ),
+        )
+        .toList();
     return QuestModel(
-        id: map['id'],
-        title: map['title'],
-        experienceReward: map['experienceReward'],
-        completed: map['completed'],
-        paused: map['paused'],
-        classification: map['classification'] ?? 0,
-        dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
-        startDate: map['startDate'] != null ? DateTime.parse(map['startDate']) : null,
-        repeatEnd: map['repeatEnd'] != null ? DateTime.parse(map['repeatEnd']): null,
-        tasks: tasks
+      id: map['id'],
+      title: map['title'],
+      experienceReward: map['experienceReward'],
+      completed: map['completed'],
+      paused: map['paused'],
+      classification: map['classification'] ?? 0,
+      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
+      startDate: map['startDate'] != null
+          ? DateTime.parse(map['startDate'])
+          : null,
+      repeatEnd: map['repeatEnd'] != null
+          ? DateTime.parse(map['repeatEnd'])
+          : null,
+      tasks: tasks,
     );
   }
 }

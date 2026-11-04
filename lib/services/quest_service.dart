@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:quest_board/models/task_model.dart';
 import 'package:quest_board/services/player_achievements.dart';
 import 'package:quest_board/services/player_service.dart';
+import 'package:quest_board/services/quest_notification_scheduler.dart';
 import 'package:quest_board/services/quest_overlay_notifier.dart';
 import 'package:quest_board/services/repeated_quest_service.dart';
 
@@ -15,6 +16,7 @@ class QuestService extends ChangeNotifier {
   final QuestRepository _questRepository;
   final PlayerService _playerService;
   final PlayerAchievements _playerAchievements;
+  final QuestNotificationScheduler _notificationScheduler;
 
   final List<QuestModel> _quests = [];
   final List<QuestModel> _archivedQuests = [];
@@ -23,11 +25,11 @@ class QuestService extends ChangeNotifier {
 
   QuestService(
     this._playerService,
-    this._playerAchievements,
-    {
-      required this._overlayNotifier,
-      required this._questRepository,
-    });
+    this._playerAchievements, {
+    required this._overlayNotifier,
+    required this._questRepository,
+    required this._notificationScheduler,
+  });
 
   List<QuestModel> get quests => List.unmodifiable(_quests);
   List<QuestModel> get archivedQuests => List.unmodifiable(_archivedQuests);
@@ -35,23 +37,24 @@ class QuestService extends ChangeNotifier {
   Future<void> initialize() async {
     await loadQuests();
     await _updateRepeatedQuests();
-    _repeatTimer = Timer.periodic(const Duration(minutes: 1),
-          (_) async {
-        await _updateRepeatedQuests();
-      },
-    );
+    await _notificationScheduler.syncAll(_quests);
+    _repeatTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
+      await _updateRepeatedQuests();
+    });
   }
 
   Future<void> loadQuests() async {
-    _quests..clear()..addAll(await _questRepository.getAll());
-    _archivedQuests..clear()..addAll(await _questRepository.getArchived());
+    _quests
+      ..clear()
+      ..addAll(await _questRepository.getAll());
+    _archivedQuests
+      ..clear()
+      ..addAll(await _questRepository.getArchived());
     notifyListeners();
   }
 
   Future<void> syncOverlay() async {
-    await _overlayNotifier.questsChanged(
-      List.unmodifiable(_quests),
-    );
+    await _overlayNotifier.questsChanged(List.unmodifiable(_quests));
   }
 
   Future<void> _updateRepeatedQuests() async {
@@ -62,18 +65,23 @@ class QuestService extends ChangeNotifier {
         continue;
       }
 
-      if (RepeatedQuestService.shouldArchive(quest, now)){
+      if (RepeatedQuestService.shouldArchive(quest, now)) {
         await archiveQuest(quest);
         continue;
       }
 
-      final intervalsPassed = RepeatedQuestService.getMissedIntervals(quest, now);
+      final intervalsPassed = RepeatedQuestService.getMissedIntervals(
+        quest,
+        now,
+      );
 
       if (intervalsPassed == 0) continue;
 
       _playerService.takeDamage(intervalsPassed);
 
-      RepeatedQuestService.updateRepeatDates(quest, intervalsPassed,);
+      RepeatedQuestService.updateRepeatDates(quest, intervalsPassed);
+      await _saveAndSync();
+      await _notificationScheduler.syncQuest(quest, currentQuests: _quests);
     }
   }
 
@@ -90,40 +98,51 @@ class QuestService extends ChangeNotifier {
     _quests.add(quest);
     _playerService.statistics.questsCreated++;
     await _saveAndSync();
+    await _notificationScheduler.syncQuest(quest, currentQuests: _quests);
   }
 
   Future<void> archiveQuest(QuestModel quest) async {
-    if(_quests.contains(quest)){
+    if (_quests.contains(quest)) {
       final questCopy = QuestModel.fromMap(quest.toMap());
       _archivedQuests.add(questCopy);
       _quests.remove(quest);
       await _saveAndSync();
+      await _notificationScheduler.cancelQuest(quest);
     }
   }
 
   Future<void> restoreQuest(QuestModel quest) async {
-    if(_archivedQuests.contains(quest)){
+    if (_archivedQuests.contains(quest)) {
       final questCopy = QuestModel.fromMap(quest.toMap());
       _quests.add(questCopy);
       _archivedQuests.remove(quest);
       await _saveAndSync();
+      await _notificationScheduler.syncQuest(questCopy, currentQuests: _quests);
     }
   }
 
   Future<void> removeArchivedQuest(QuestModel quest) async {
-    if(_archivedQuests.remove(quest)){
+    if (_archivedQuests.remove(quest)) {
       await _saveAndSync();
     }
   }
 
-  Future<void> updateQuest(String questId, {
-        // Quest
-        String? newTitle, int? newExpReward, bool togglePause = false, int? newClassification, DateTime? newDueDate, DateTime? newStartDate, DateTime? newRepeatEnd,
-        // Tasks
-        List<TaskModel>? newTasks, String? taskId,
-      }) async {
+  Future<void> updateQuest(
+    String questId, {
+    // Quest
+    String? newTitle,
+    int? newExpReward,
+    bool togglePause = false,
+    int? newClassification,
+    DateTime? newDueDate,
+    DateTime? newStartDate,
+    DateTime? newRepeatEnd,
+    // Tasks
+    List<TaskModel>? newTasks,
+    String? taskId,
+  }) async {
     final quest = _quests.cast<QuestModel?>().firstWhere(
-          (q) => q?.id == questId,
+      (q) => q?.id == questId,
       orElse: () => null,
     );
 
@@ -140,14 +159,20 @@ class QuestService extends ChangeNotifier {
 
     if (newDueDate != null) {
       for (final task in quest.tasks) {
-        if (task.dueDate != null && task.dueDate!.isAfter(newDueDate)) task.setDueDate(newDueDate);
+        if (task.dueDate != null && task.dueDate!.isAfter(newDueDate)) {
+          task.setDueDate(newDueDate);
+        }
       }
       quest.setDueDate(newDueDate);
     }
 
     if (newStartDate != null) quest.setStartDate(newStartDate);
-    
-    if (newRepeatEnd != null && newRepeatEnd.isAfter(quest.dueDate!)) quest.setRepeatEnd(newRepeatEnd);
+
+    if (newRepeatEnd != null &&
+        quest.dueDate != null &&
+        newRepeatEnd.isAfter(quest.dueDate!)) {
+      quest.setRepeatEnd(newRepeatEnd);
+    }
 
     // Tasks
     if (newTasks != null) {
@@ -155,21 +180,27 @@ class QuestService extends ChangeNotifier {
       quest.setTasks(newTasks);
     } else if (taskId != null) {
       // Modificar una Task concreta
-      final completionChanged = quest.taskTapped(taskId,);
+      final completionChanged = quest.taskTapped(taskId);
 
       if (completionChanged) {
         if (quest.completed) {
           await _playerService.addExperience(quest.experienceReward);
           if (!quest.paused) quest.togglePaused();
-          _playerService.statistics.registerQuestCompleted(quest.classification, true);
+          _playerService.statistics.registerQuestCompleted(
+            quest.classification,
+            true,
+          );
         } else {
           await _playerService.addExperience(-quest.experienceReward);
-          _playerService.statistics.registerQuestCompleted(quest.classification, false);
+          _playerService.statistics.registerQuestCompleted(
+            quest.classification,
+            false,
+          );
         }
       }
     }
     await _saveAndSync();
-
+    await _notificationScheduler.syncQuest(quest, currentQuests: _quests);
     await _playerAchievements.checkAchievements();
   }
 

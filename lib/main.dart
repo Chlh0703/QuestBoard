@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:quest_board/controllers/quest_controller.dart';
 import 'package:quest_board/repositories/hive_quest_repository.dart';
+import 'package:quest_board/services/notification_service.dart';
 import 'package:quest_board/services/overlay_quest_service.dart';
 import 'package:quest_board/services/player_achievements.dart';
 import 'package:quest_board/services/player_service.dart';
+import 'package:quest_board/services/quest_notification_scheduler.dart';
 import 'package:quest_board/services/storage_service.dart';
 
 import 'services/quest_service.dart';
@@ -41,11 +43,23 @@ Future<void> runMainWindow() async {
   final playerAchievements = PlayerAchievements(statistics: playerService.statistics,);
   await playerAchievements.initialize();
 
-  final questService = QuestService(playerService, playerAchievements, overlayNotifier: WindowService(), questRepository: questRepository,);
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
+  final notificationScheduler = QuestNotificationScheduler(notificationService);
+
+  final questService = QuestService(
+    playerService,
+    playerAchievements,
+    overlayNotifier: WindowService(),
+    questRepository: questRepository,
+    notificationScheduler: notificationScheduler,
+  );
   await questService.initialize();
 
   final questController = QuestController(questService);
-  await HotkeyService.initialize(showOverlay: WindowService.showOverlay,);
+
+  await HotkeyService.initialize(showOverlay: WindowService.showOverlay);
 
   await WindowService.setupMainWindow();
   await WindowService.initializeMainReceiver(questController);
@@ -60,8 +74,6 @@ Future<void> runMainWindow() async {
   );
 }
 
-
-
 Future<void> runOverlayWindow() async {
   final overlayController = OverlayController();
   final overlayQuestService = OverlayQuestService([]);
@@ -69,10 +81,7 @@ Future<void> runOverlayWindow() async {
     overlayController,
     overlayQuestService,
   );
-  await WindowService.sendToMain(
-    'overlayReady',
-    null,
-  );
+  await WindowService.sendToMain('overlayReady', null);
   runApp(
     OverlayApp(
       overlayQuestService: overlayQuestService,
