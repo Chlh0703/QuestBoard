@@ -5,7 +5,6 @@ import 'package:quest_board/controllers/quest_controller.dart';
 import '../models/quest_model.dart';
 import '../models/task_model.dart';
 import '../services/datetime_service.dart';
-import '../services/quest_service.dart';
 
 import 'due_date_dialog.dart';
 import 'task_dialog.dart';
@@ -35,6 +34,7 @@ void showQuestDialog(
   );
 
   int classification = quest?.classification ?? 1;
+  int reminderMinutesBefore = quest?.reminderMinutesBefore ?? 120;
 
   DateTime? startDate =
       quest?.startDate ?? DateTimeService.startOfDay(DateTime.now());
@@ -216,6 +216,51 @@ void showQuestDialog(
 
                   const SizedBox(height: 20),
 
+                  DropdownButtonFormField<int>(
+                    initialValue: reminderMinutesBefore,
+                    decoration: const InputDecoration(
+                      labelText: 'Reminder before task deadlines',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: QuestModel.noReminder,
+                        child: Text('No reminder'),
+                      ),
+                      DropdownMenuItem(
+                        value: 0,
+                        child: Text('At the deadline'),
+                      ),
+                      DropdownMenuItem(
+                        value: 15,
+                        child: Text('15 minutes before'),
+                      ),
+                      DropdownMenuItem(
+                        value: 30,
+                        child: Text('30 minutes before'),
+                      ),
+                      DropdownMenuItem(
+                        value: 60,
+                        child: Text('1 hour before'),
+                      ),
+                      DropdownMenuItem(
+                        value: 120,
+                        child: Text('2 hours before'),
+                      ),
+                      DropdownMenuItem(
+                        value: 1440,
+                        child: Text('1 day before'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() {
+                        reminderMinutesBefore = value;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
                   // Experience
                   TextField(
                     controller: experienceController,
@@ -387,6 +432,7 @@ void showQuestDialog(
                         dueDate: dueDate,
                         startDate: startDate,
                         repeatEnd: repeatEnd,
+                        reminderMinutesBefore: reminderMinutesBefore,
                       ),
                     );
                   } else {
@@ -399,6 +445,7 @@ void showQuestDialog(
                       newTasks: tasks,
                       newDueDate: dueDate,
                       newRepeatEnd: repeatEnd,
+                      newReminderMinutesBefore: reminderMinutesBefore,
                     );
                   }
 

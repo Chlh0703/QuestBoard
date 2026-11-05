@@ -7,6 +7,8 @@ part 'quest_model.g.dart';
 
 @HiveType(typeId: 1)
 class QuestModel extends HiveObject {
+  static const int noReminder = -1;
+
   @HiveField(0)
   final String id;
 
@@ -37,6 +39,9 @@ class QuestModel extends HiveObject {
   @HiveField(9)
   List<TaskModel> _tasks;
 
+  @HiveField(10)
+  int _reminderMinutesBefore;
+
   QuestModel({
     String? id,
     required this._title,
@@ -48,6 +53,7 @@ class QuestModel extends HiveObject {
     this._startDate,
     this._repeatEnd,
     List<TaskModel>? tasks,
+    this._reminderMinutesBefore = 120,
   }) : id = id ?? const Uuid().v4(),
        _tasks = tasks ?? [];
 
@@ -60,42 +66,18 @@ class QuestModel extends HiveObject {
   DateTime? get startDate => _startDate;
   DateTime? get repeatEnd => _repeatEnd;
   List<TaskModel> get tasks => List.unmodifiable(_tasks);
+  int get reminderMinutesBefore => _reminderMinutesBefore;
 
-  void setTitle(String newTitle) {
-    _title = newTitle;
-  }
-
-  void setExperienceReward(int newExperienceReward) {
-    _experienceReward = newExperienceReward;
-  }
-
-  void changeCompletion() {
-    _completed = !_completed;
-  }
-
-  void togglePaused() {
-    _paused = !_paused;
-  }
-
-  void setClassification(int newClassification) {
-    _classification = newClassification;
-  }
-
-  void setDueDate(DateTime? newDueDate) {
-    _dueDate = newDueDate;
-  }
-
-  void setStartDate(DateTime? newStartDate) {
-    _startDate = newStartDate;
-  }
-
-  void setRepeatEnd(DateTime? newRepeatEnd) {
-    _repeatEnd = newRepeatEnd;
-  }
-
-  void setTasks(List<TaskModel> newTasks) {
-    _tasks = newTasks;
-  }
+  void setTitle(String newTitle) => _title = newTitle;
+  void setExperienceReward(int newExperienceReward) => _experienceReward = newExperienceReward;
+  void changeCompletion() => _completed = !_completed;
+  void togglePaused() => _paused = !_paused;
+  void setClassification(int newClassification) => _classification = newClassification;
+  void setDueDate(DateTime? newDueDate) => _dueDate = newDueDate;
+  void setStartDate(DateTime? newStartDate) => _startDate = newStartDate;
+  void setRepeatEnd(DateTime? newRepeatEnd) => _repeatEnd = newRepeatEnd;
+  void setReminderMinutesBefore(int minutes) => _reminderMinutesBefore = minutes;
+  void setTasks(List<TaskModel> newTasks) => _tasks = newTasks;
 
   bool taskTapped(String taskId) {
     final task = _tasks.cast<TaskModel?>().firstWhere(
@@ -134,6 +116,7 @@ class QuestModel extends HiveObject {
       'dueDate': _dueDate?.toIso8601String(),
       'startDate': _startDate?.toIso8601String(),
       'repeatEnd': _repeatEnd?.toIso8601String(),
+      'reminderMinutesBefore': _reminderMinutesBefore,
       'tasks': _tasks.map((task) {
         return {
           'id': task.id,
@@ -178,6 +161,7 @@ class QuestModel extends HiveObject {
       repeatEnd: map['repeatEnd'] != null
           ? DateTime.parse(map['repeatEnd'])
           : null,
+      reminderMinutesBefore: map['reminderMinutesBefore'] ?? 120,
       tasks: tasks,
     );
   }

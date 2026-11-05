@@ -25,7 +25,11 @@ class NotificationService {
     tz.setLocalLocation(tz.getLocation(localTimezone.identifier));
 
     const settings = InitializationSettings(
-      macOS: DarwinInitializationSettings(),
+      macOS: DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      ),
       windows: WindowsInitializationSettings(
         appName: 'QuestBoard',
         appUserModelId: 'com.questboard.app',
@@ -36,7 +40,10 @@ class NotificationService {
     await _plugin.initialize(settings: settings);
 
     await _plugin
-        .resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>()?.requestPermissions(alert: true, sound: true);
+        .resolvePlatformSpecificImplementation<
+          MacOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, sound: true);
   }
 
   Future<void> showNotification({
@@ -57,6 +64,7 @@ class NotificationService {
     required String title,
     required String body,
     required DateTime scheduledDate,
+    String? payload,
   }) async {
     if (!scheduledDate.isAfter(DateTime.now())) return;
 
@@ -66,7 +74,8 @@ class NotificationService {
       body: body,
       scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
       notificationDetails: _details,
-      // Este valor solo afecta a Android, peerooo la API lo requiere
+      payload: payload,
+      // Este valor solo afecta a Android, peerooo la API requiere el argumento.
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
   }

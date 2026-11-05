@@ -137,6 +137,7 @@ class QuestService extends ChangeNotifier {
     DateTime? newDueDate,
     DateTime? newStartDate,
     DateTime? newRepeatEnd,
+    int? newReminderMinutesBefore,
     // Tasks
     List<TaskModel>? newTasks,
     String? taskId,
@@ -173,6 +174,8 @@ class QuestService extends ChangeNotifier {
         newRepeatEnd.isAfter(quest.dueDate!)) {
       quest.setRepeatEnd(newRepeatEnd);
     }
+
+    if (newReminderMinutesBefore != null) quest.setReminderMinutesBefore(newReminderMinutesBefore);
 
     // Tasks
     if (newTasks != null) {

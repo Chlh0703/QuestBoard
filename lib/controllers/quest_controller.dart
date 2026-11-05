@@ -28,7 +28,8 @@ class QuestController {
     int? newClassification,
     DateTime? newDueDate,
     DateTime? newRepeatEnd,
-    List<TaskModel>? newTasks
+    List<TaskModel>? newTasks,
+    int? newReminderMinutesBefore,
   }) {
     return _questService.updateQuest(questId,
       newTitle: newTitle,
@@ -38,6 +39,7 @@ class QuestController {
       newDueDate: newDueDate,
       newRepeatEnd: newRepeatEnd,
       newTasks: newTasks,
+      newReminderMinutesBefore: newReminderMinutesBefore,
     );
   }
 

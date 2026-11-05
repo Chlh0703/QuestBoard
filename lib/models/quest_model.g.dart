@@ -26,13 +26,14 @@ class QuestModelAdapter extends TypeAdapter<QuestModel> {
       dueDate: fields[6] as DateTime?,
       startDate: fields[7] as DateTime?,
       repeatEnd: fields[8] as DateTime?,
+      reminderMinutesBefore: fields[10] as int? ?? 120,
     ).._tasks = (fields[9] as List).cast<TaskModel>();
   }
 
   @override
   void write(BinaryWriter writer, QuestModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -52,7 +53,9 @@ class QuestModelAdapter extends TypeAdapter<QuestModel> {
       ..writeByte(8)
       ..write(obj._repeatEnd)
       ..writeByte(9)
-      ..write(obj._tasks);
+      ..write(obj._tasks)
+      ..writeByte(10)
+      ..write(obj._reminderMinutesBefore);
   }
 
   @override
