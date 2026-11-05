@@ -31,11 +31,11 @@ class QuestController {
     List<TaskModel>? newTasks,
     int? newReminderMinutesBefore,
   }) {
-    return _questService.updateQuest(questId,
+    return _questService.updateQuest(
+      questId,
       newTitle: newTitle,
       newExpReward: newExpReward,
-      newClassification:
-      newClassification,
+      newClassification: newClassification,
       newDueDate: newDueDate,
       newRepeatEnd: newRepeatEnd,
       newTasks: newTasks,

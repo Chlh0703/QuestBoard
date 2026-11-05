@@ -82,6 +82,8 @@ class NotificationService {
 
   Future<void> cancelNotification(int id) => _plugin.cancel(id: id);
 
+  Future<void> cancelAll() => _plugin.cancelAll();
+
   Future<List<PendingNotificationRequest>> pendingNotificationRequests() =>
       _plugin.pendingNotificationRequests();
 }

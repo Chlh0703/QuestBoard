@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:quest_board/services/hotkey_service.dart';
 
-import '../services/configuration_service.dart';
 import '../services/overlay_service.dart';
+import '../services/configuration_service.dart';
+import '../services/quest_service.dart';
 
 
 void showConfigurationDialog(BuildContext context) {
@@ -20,7 +21,8 @@ class ConfigurationDialog extends StatefulWidget {
   const ConfigurationDialog({super.key});
 
   @override
-  State<ConfigurationDialog> createState() => _ConfigurationDialogState();}
+  State<ConfigurationDialog> createState() => _ConfigurationDialogState();
+}
 
 class _ConfigurationDialogState extends State<ConfigurationDialog> {
   static const HotKeyModifier defaultModifier = HotKeyModifier.control;
@@ -30,6 +32,7 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
   late PhysicalKeyboardKey selectedKey = defaultKey;
 
   bool isAlwaysOnTop = true;
+  bool notificationsEnabled = true;
 
   final List<HotKeyModifier> modifiers = [
     HotKeyModifier.control,
@@ -66,12 +69,14 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
     selectedModifier = HotkeyService.modifierKey;
     selectedKey = HotkeyService.mainKey;
     isAlwaysOnTop = OverlayService.isAlwaysOnTop;
+    notificationsEnabled = QuestService.notificationsEnabled;
   }
+
   Future<void> saveConfiguration() async {
     try {
       await ConfigurationService().updateHotkey(modifier: selectedModifier, key: selectedKey,);
-
-      await OverlayService.setAlwaysOnTop(isAlwaysOnTop);
+      await ConfigurationService().setOverlayAlwaysOnTop(isAlwaysOnTop);
+      await ConfigurationService().setNotificationsEnabled(notificationsEnabled);
 
       if (!mounted) return;
 
@@ -94,7 +99,6 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
   }
 
   @override
-
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Configuration'),
@@ -198,6 +202,19 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
                 if (value == null) return;
                 setState(() {
                   isAlwaysOnTop = value;
+                });
+              },
+            ),
+
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Enable notifications'),
+              subtitle: const Text('Receive reminders for quests and tasks.'),
+              value: notificationsEnabled,
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() {
+                  notificationsEnabled = value;
                 });
               },
             ),

@@ -21,6 +21,10 @@ class QuestService extends ChangeNotifier {
   final List<QuestModel> _quests = [];
   final List<QuestModel> _archivedQuests = [];
 
+  static bool _notificationsEnabled = true;
+
+  static QuestService? _instance;
+
   Timer? _repeatTimer;
 
   QuestService(
@@ -29,15 +33,30 @@ class QuestService extends ChangeNotifier {
     required this._overlayNotifier,
     required this._questRepository,
     required this._notificationScheduler,
-  });
+  }){
+    _instance = this;
+  }
 
   List<QuestModel> get quests => List.unmodifiable(_quests);
   List<QuestModel> get archivedQuests => List.unmodifiable(_archivedQuests);
+  static bool get notificationsEnabled => _notificationsEnabled;
+
+  static Future<void> setNotificationsEnabled(bool enabled) async {
+    if (enabled == _notificationsEnabled) return;
+
+    final service = _instance;
+    if (service == null) {
+      throw StateError('QuestService aún no se ha creado.');
+    }
+
+    _notificationsEnabled = enabled;
+    await service._notificationScheduler.setEnabled(enabled, service._quests);
+  }
 
   Future<void> initialize() async {
     await loadQuests();
+    await _notificationScheduler.setEnabled(_notificationsEnabled, _quests);
     await _updateRepeatedQuests();
-    await _notificationScheduler.syncAll(_quests);
     _repeatTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
       await _updateRepeatedQuests();
     });

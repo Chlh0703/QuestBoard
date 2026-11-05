@@ -4,9 +4,13 @@ import 'notification_service.dart';
 
 /// Mantiene sincronizados los recordatorios de las tareas de cada quest.
 class QuestNotificationScheduler {
-  QuestNotificationScheduler(this._notificationsService);
-
   final NotificationService _notificationsService;
+  bool _enabled;
+
+  QuestNotificationScheduler(
+    this._notificationsService, {
+      this._enabled = true,
+      });
 
   // Id Start hace que empiece dejando margen a otras notis,
   // Mientras que la Mask es basicamente que le hacen un AND y fuerzan que no sea tan grande
@@ -24,6 +28,11 @@ class QuestNotificationScheduler {
       hash = (hash * 0x01000193) & 0xffffffff;
     }
     return _questIdStart + (hash & _questIdMask);
+  }
+
+  Future<void> setEnabled(bool enabled, List<QuestModel> quests) async {
+    _enabled = enabled;
+    await syncAll(quests);
   }
 
   String _payloadForQuest(QuestModel quest) => '$_payloadPrefix${quest.id}:';
@@ -58,22 +67,30 @@ class QuestNotificationScheduler {
   }) async {
     _validateNoIdCollisions(currentQuests);
     await _cancelRemindersForQuest(quest);
+    if (!_enabled) return;
     await _scheduleRemindersForQuest(quest);
+
   }
 
   /// Reconstruye los recordatorios de tareas al iniciar la aplicación.
   Future<void> syncAll(List<QuestModel> quests) async {
     _validateNoIdCollisions(quests);
+    await cancelAll();
 
+    if (!_enabled) return;
+
+    for (final quest in quests) {
+      await _scheduleRemindersForQuest(quest);
+    }
+  }
+
+  Future<void> cancelAll() async {
     final pending = await _notificationsService.pendingNotificationRequests();
+
     for (final request in pending) {
       if (_isQuestNotificationId(request.id)) {
         await _notificationsService.cancelNotification(request.id);
       }
-    }
-
-    for (final quest in quests) {
-      await _scheduleRemindersForQuest(quest);
     }
   }
 
@@ -113,6 +130,5 @@ class QuestNotificationScheduler {
     }
   }
 
-  bool _isQuestNotificationId(int id) =>
-      id >= _questIdStart && id <= _questIdStart + _questIdMask;
+  bool _isQuestNotificationId(int id) =>  id >= _questIdStart && id <= _questIdStart + _questIdMask;
 }

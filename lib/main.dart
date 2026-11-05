@@ -10,6 +10,7 @@ import 'package:quest_board/services/quest_notification_scheduler.dart';
 import 'package:quest_board/services/storage_service.dart';
 
 import 'services/quest_service.dart';
+import 'services/configuration_service.dart';
 import 'controllers/overlay_controller.dart';
 import 'services/window_service.dart';
 import 'services/hotkey_service.dart';
