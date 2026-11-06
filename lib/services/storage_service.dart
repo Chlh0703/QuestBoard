@@ -115,18 +115,11 @@ class StorageService {
       _configurationBox.put('settings', configuration);
 
   Future<void> clearDatabase() async {
-    await Hive.box<QuestModel>(questBoxName).close();
-    await Hive.box<QuestModel>(archivedQuestBoxName).close();
-    await Hive.box<PlayerModel>(playerBoxName).close();
-    await Hive.box<PlayerStatistics>(statisticsBoxName).close();
-    await Hive.box(achievementBoxName).close();
-    await Hive.box(configurationBoxName).close();
-
-    await Hive.deleteBoxFromDisk(questBoxName);
-    await Hive.deleteBoxFromDisk(archivedQuestBoxName);
-    await Hive.deleteBoxFromDisk(playerBoxName);
-    await Hive.deleteBoxFromDisk(statisticsBoxName);
-    await Hive.deleteBoxFromDisk(achievementBoxName);
-    await Hive.deleteBoxFromDisk(configurationBoxName);
+    await _questBox.clear();
+    await _archivedQuestBox.clear();
+    await _playerBox.clear();
+    await _statisticsBox.clear();
+    await _achievementBox.clear();
+    await _configurationBox.clear();
   }
 }

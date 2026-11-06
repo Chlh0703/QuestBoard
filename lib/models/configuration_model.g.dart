@@ -2,6 +2,10 @@
 
 part of 'configuration_model.dart';
 
+// **************************************************************************
+// TypeAdapterGenerator
+// **************************************************************************
+
 class ConfigurationModelAdapter extends TypeAdapter<ConfigurationModel> {
   @override
   final int typeId = 5;
@@ -10,9 +14,8 @@ class ConfigurationModelAdapter extends TypeAdapter<ConfigurationModel> {
   ConfigurationModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
-      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-
     return ConfigurationModel(
       hotkeyModifier: fields[0] as String,
       hotkeyMainKey: fields[1] as String,
@@ -34,4 +37,14 @@ class ConfigurationModelAdapter extends TypeAdapter<ConfigurationModel> {
       ..writeByte(3)
       ..write(obj.notificationsEnabled);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ConfigurationModelAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

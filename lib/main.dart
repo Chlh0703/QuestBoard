@@ -35,18 +35,17 @@ Future<void> runMainWindow() async {
   final storageService = StorageService();
   await storageService.initialize();
 
+  final questRepository = HiveQuestRepository(storageService);
+  // For some test reasons:
+  // await questRepository.clearAll();
+
+
   final configurationService = ConfigurationService(storageService);
   final configuration = await configurationService.loadConfiguration();
 
   HotkeyService.modifierKey = HotkeyService.modifierFromName(configuration.hotkeyModifier);
   HotkeyService.mainKey = HotkeyService.keyFromDebugName(configuration.hotkeyMainKey);
-  await OverlayService.setAlwaysOnTop(configuration.alwaysOnTop);
   QuestService.initializeNotificationsEnabled(configuration.notificationsEnabled,);
-
-  final questRepository = HiveQuestRepository(storageService);
-
-  // For some test reasons:
-  // await questRepository.clearAll();
 
   final playerService = PlayerService();
   await playerService.initialize();
@@ -75,6 +74,7 @@ Future<void> runMainWindow() async {
   await WindowService.setupMainWindow();
   await WindowService.initializeMainReceiver(questController);
   await WindowService.createOverlayWindow();
+  await OverlayService.setAlwaysOnTop(configuration.alwaysOnTop);
 
   runApp(
     QuestBoardApp(

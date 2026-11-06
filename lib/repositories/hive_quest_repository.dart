@@ -29,7 +29,6 @@ class HiveQuestRepository implements QuestRepository {
 
   @override
   Future<void> clearAll() async {
-    await _storage.saveQuests([]);
-    await _storage.saveArchivedQuests([]);
+    await _storage.clearDatabase();
   }
 }
