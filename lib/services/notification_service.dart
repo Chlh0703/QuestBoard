@@ -38,7 +38,9 @@ class NotificationService {
     );
 
     await _plugin.initialize(settings: settings);
+  }
 
+  Future<void> requestPermissions() async {
     await _plugin
         .resolvePlatformSpecificImplementation<
           MacOSFlutterLocalNotificationsPlugin

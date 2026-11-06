@@ -25,58 +25,20 @@ class ConfigurationDialog extends StatefulWidget {
 }
 
 class _ConfigurationDialogState extends State<ConfigurationDialog> {
-  static const HotKeyModifier defaultModifier = HotKeyModifier.control;
-  static const PhysicalKeyboardKey defaultKey = PhysicalKeyboardKey.keyS;
+  late HotKeyModifier selectedModifier = HotkeyService.modifierKey;
+  late PhysicalKeyboardKey selectedKey = HotkeyService.mainKey;
+  bool isAlwaysOnTop = OverlayService.isAlwaysOnTop;
+  bool notificationsEnabled = QuestService.notificationsEnabled;
 
-  late HotKeyModifier selectedModifier = defaultModifier;
-  late PhysicalKeyboardKey selectedKey = defaultKey;
-
-  bool isAlwaysOnTop = true;
-  bool notificationsEnabled = true;
-
-  final List<HotKeyModifier> modifiers = [
-    HotKeyModifier.control,
-    HotKeyModifier.alt,
-    HotKeyModifier.shift,
-    HotKeyModifier.meta,
-  ];
-
-  final List<PhysicalKeyboardKey> keys = [
-    PhysicalKeyboardKey.keyA,
-    PhysicalKeyboardKey.keyB,
-    PhysicalKeyboardKey.keyD,
-    PhysicalKeyboardKey.keyE,
-    PhysicalKeyboardKey.keyF,
-    PhysicalKeyboardKey.keyG,
-    PhysicalKeyboardKey.keyH,
-    PhysicalKeyboardKey.keyK,
-    PhysicalKeyboardKey.keyL,
-    PhysicalKeyboardKey.keyM,
-    PhysicalKeyboardKey.keyP,
-    PhysicalKeyboardKey.keyQ,
-    PhysicalKeyboardKey.keyR,
-    PhysicalKeyboardKey.keyS,
-    PhysicalKeyboardKey.keyT,
-    PhysicalKeyboardKey.keyW,
-    PhysicalKeyboardKey.keyX,
-    PhysicalKeyboardKey.keyY,
-    PhysicalKeyboardKey.keyZ,
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    selectedModifier = HotkeyService.modifierKey;
-    selectedKey = HotkeyService.mainKey;
-    isAlwaysOnTop = OverlayService.isAlwaysOnTop;
-    notificationsEnabled = QuestService.notificationsEnabled;
-  }
+  final List<HotKeyModifier> modifiers = HotKeyModifier.values;
+  final List<PhysicalKeyboardKey> keys = HotkeyService.supportedKeys;
+  final ConfigurationService _configurationService = ConfigurationService();
 
   Future<void> saveConfiguration() async {
     try {
-      await ConfigurationService().updateHotkey(modifier: selectedModifier, key: selectedKey,);
-      await ConfigurationService().setOverlayAlwaysOnTop(isAlwaysOnTop);
-      await ConfigurationService().setNotificationsEnabled(notificationsEnabled);
+      await _configurationService.updateHotkey(modifier: selectedModifier, key: selectedKey,);
+      await _configurationService.setOverlayAlwaysOnTop(isAlwaysOnTop);
+      await _configurationService.setNotificationsEnabled(notificationsEnabled);
 
       if (!mounted) return;
 

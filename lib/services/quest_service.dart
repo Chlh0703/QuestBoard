@@ -41,6 +41,10 @@ class QuestService extends ChangeNotifier {
   List<QuestModel> get archivedQuests => List.unmodifiable(_archivedQuests);
   static bool get notificationsEnabled => _notificationsEnabled;
 
+  static void initializeNotificationsEnabled(bool enabled) {
+    _notificationsEnabled = enabled;
+  }
+
   static Future<void> setNotificationsEnabled(bool enabled) async {
     if (enabled == _notificationsEnabled) return;
 

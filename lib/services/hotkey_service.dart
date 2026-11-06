@@ -10,6 +10,40 @@ class HotkeyService extends ChangeNotifier {
 
   static VoidCallback? _showOverlay;
 
+  static const List<PhysicalKeyboardKey> supportedKeys = [
+    PhysicalKeyboardKey.keyA,
+    PhysicalKeyboardKey.keyB,
+    PhysicalKeyboardKey.keyD,
+    PhysicalKeyboardKey.keyE,
+    PhysicalKeyboardKey.keyF,
+    PhysicalKeyboardKey.keyG,
+    PhysicalKeyboardKey.keyH,
+    PhysicalKeyboardKey.keyK,
+    PhysicalKeyboardKey.keyL,
+    PhysicalKeyboardKey.keyM,
+    PhysicalKeyboardKey.keyP,
+    PhysicalKeyboardKey.keyQ,
+    PhysicalKeyboardKey.keyR,
+    PhysicalKeyboardKey.keyS,
+    PhysicalKeyboardKey.keyT,
+    PhysicalKeyboardKey.keyW,
+    PhysicalKeyboardKey.keyX,
+    PhysicalKeyboardKey.keyY,
+    PhysicalKeyboardKey.keyZ,
+  ];
+
+  static HotKeyModifier modifierFromName(String name) =>
+      HotKeyModifier.values.firstWhere(
+        (modifier) => modifier.name == name,
+        orElse: () => HotKeyModifier.control,
+      );
+
+  static PhysicalKeyboardKey keyFromDebugName(String name) =>
+      supportedKeys.firstWhere(
+        (key) => key.debugName == name,
+        orElse: () => PhysicalKeyboardKey.keyS,
+      );
+
   static Future<void> initialize({required VoidCallback showOverlay,}) async {
     _showOverlay = showOverlay;
     await _registerHotkey();

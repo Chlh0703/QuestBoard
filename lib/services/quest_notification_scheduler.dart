@@ -9,8 +9,8 @@ class QuestNotificationScheduler {
 
   QuestNotificationScheduler(
     this._notificationsService, {
-      this._enabled = true,
-      });
+    this._enabled = true,
+  });
 
   // Id Start hace que empiece dejando margen a otras notis,
   // Mientras que la Mask es basicamente que le hacen un AND y fuerzan que no sea tan grande
@@ -31,6 +31,7 @@ class QuestNotificationScheduler {
   }
 
   Future<void> setEnabled(bool enabled, List<QuestModel> quests) async {
+    if (enabled) await _notificationsService.requestPermissions();
     _enabled = enabled;
     await syncAll(quests);
   }

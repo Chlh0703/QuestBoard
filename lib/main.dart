@@ -13,6 +13,7 @@ import 'services/quest_service.dart';
 import 'services/configuration_service.dart';
 import 'controllers/overlay_controller.dart';
 import 'services/window_service.dart';
+import 'services/overlay_service.dart';
 import 'services/hotkey_service.dart';
 import 'apps/quest_board_app.dart';
 import 'apps/overlay_app.dart';
@@ -33,6 +34,15 @@ void main() async {
 Future<void> runMainWindow() async {
   final storageService = StorageService();
   await storageService.initialize();
+
+  final configurationService = ConfigurationService(storageService);
+  final configuration = await configurationService.loadConfiguration();
+
+  HotkeyService.modifierKey = HotkeyService.modifierFromName(configuration.hotkeyModifier);
+  HotkeyService.mainKey = HotkeyService.keyFromDebugName(configuration.hotkeyMainKey);
+  await OverlayService.setAlwaysOnTop(configuration.alwaysOnTop);
+  QuestService.initializeNotificationsEnabled(configuration.notificationsEnabled,);
+
   final questRepository = HiveQuestRepository(storageService);
 
   // For some test reasons:

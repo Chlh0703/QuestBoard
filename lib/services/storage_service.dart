@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quest_board/models/player_statistics.dart';
+import 'package:quest_board/models/configuration_model.dart';
 
 import '../models/quest_model.dart';
 import '../models/player_model.dart';
@@ -11,11 +12,13 @@ class StorageService {
   static const String playerBoxName = 'player';
   static const String statisticsBoxName = 'statistics';
   static const String achievementBoxName = 'achievement_states';
+  static const String configurationBoxName = 'configuration';
 
   Box<QuestModel> get _questBox => Hive.box<QuestModel>(questBoxName);
   Box<QuestModel> get _archivedQuestBox => Hive.box<QuestModel>(archivedQuestBoxName);
   Box<PlayerModel> get _playerBox => Hive.box<PlayerModel>(playerBoxName);
   Box<PlayerStatistics> get _statisticsBox => Hive.box<PlayerStatistics>(statisticsBoxName);
+  Box<ConfigurationModel> get _configurationBox => Hive.box<ConfigurationModel>(configurationBoxName);
   Box get _achievementBox => Hive.box(achievementBoxName);
 
   Future<void> initialize() async {
@@ -25,12 +28,14 @@ class StorageService {
     if (!Hive.isAdapterRegistered(2)) Hive.registerAdapter(PlayerModelAdapter());
     if (!Hive.isAdapterRegistered(3)) Hive.registerAdapter(TaskModelAdapter());
     if (!Hive.isAdapterRegistered(4)) Hive.registerAdapter(PlayerStatisticsAdapter());
+    if (!Hive.isAdapterRegistered(5)) Hive.registerAdapter(ConfigurationModelAdapter());
 
     await Hive.openBox<QuestModel>(questBoxName);
     await Hive.openBox<PlayerModel>(playerBoxName);
     await Hive.openBox<QuestModel>(archivedQuestBoxName);
     await Hive.openBox<PlayerStatistics>(statisticsBoxName);
     await Hive.openBox(achievementBoxName);
+    await Hive.openBox<ConfigurationModel>(configurationBoxName);
   }
 
   Future<List<QuestModel>> loadQuests() async {
@@ -102,17 +107,26 @@ class StorageService {
     });
   }
 
+  ConfigurationModel loadConfiguration() {
+    return _configurationBox.get('settings') ?? ConfigurationModel();
+  }
+
+  Future<void> saveConfiguration(ConfigurationModel configuration) =>
+      _configurationBox.put('settings', configuration);
+
   Future<void> clearDatabase() async {
     await Hive.box<QuestModel>(questBoxName).close();
     await Hive.box<QuestModel>(archivedQuestBoxName).close();
     await Hive.box<PlayerModel>(playerBoxName).close();
     await Hive.box<PlayerStatistics>(statisticsBoxName).close();
     await Hive.box(achievementBoxName).close();
+    await Hive.box(configurationBoxName).close();
 
     await Hive.deleteBoxFromDisk(questBoxName);
     await Hive.deleteBoxFromDisk(archivedQuestBoxName);
     await Hive.deleteBoxFromDisk(playerBoxName);
     await Hive.deleteBoxFromDisk(statisticsBoxName);
     await Hive.deleteBoxFromDisk(achievementBoxName);
+    await Hive.deleteBoxFromDisk(configurationBoxName);
   }
 }
