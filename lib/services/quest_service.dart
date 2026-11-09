@@ -53,8 +53,8 @@ class QuestService extends ChangeNotifier {
       throw StateError('QuestService aún no se ha creado.');
     }
 
-    _notificationsEnabled = enabled;
     await service._notificationScheduler.setEnabled(enabled, service._quests);
+    _notificationsEnabled = enabled;
   }
 
   Future<void> initialize() async {

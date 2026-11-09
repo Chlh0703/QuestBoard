@@ -7,10 +7,10 @@ import '../dialogs/configuration_dialog.dart';
 import '../services/player_achievements.dart';
 import '../widgets/player_stats.dart';
 import '../widgets/quest_list.dart';
-import '../services/quest_service.dart';
 import '../dialogs/statistics_dialog.dart';
 import '../dialogs/quest_dialog.dart';
 import '../dialogs/archived_quests_dialog.dart';
+import '../dialogs/game_menu_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
   final QuestController questController;
@@ -134,6 +134,14 @@ class HomeScreen extends StatelessWidget {
                           ),
 
                           const SizedBox(width: 12),
+
+                          IconButton(
+                            tooltip: 'Lights Out game',
+                            icon: const Icon(Icons.extension_outlined),
+                            onPressed: () => showGameMainMenuDialog(context),
+                          ),
+
+                          const SizedBox(width: 4),
 
                           IconButton(
                             tooltip: 'Archived quests',
