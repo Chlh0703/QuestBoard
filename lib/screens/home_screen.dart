@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quest_board/services/player_service.dart';
 
 import '../controllers/quest_controller.dart';
+import '../services/game_service.dart';
 import '../dialogs/achievements_dialog.dart';
 import '../dialogs/configuration_dialog.dart';
 import '../services/player_achievements.dart';
@@ -10,18 +11,21 @@ import '../widgets/quest_list.dart';
 import '../dialogs/statistics_dialog.dart';
 import '../dialogs/quest_dialog.dart';
 import '../dialogs/archived_quests_dialog.dart';
+import '../dialogs/game_dialog.dart';
 import '../dialogs/game_menu_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
   final QuestController questController;
   final PlayerService playerService;
   final PlayerAchievements playerAchievements;
+  final GameService gameService;
 
   const HomeScreen({
     super.key,
     required this.questController,
     required this.playerService,
     required this.playerAchievements,
+    required this.gameService,
   });
 
   @override
@@ -136,9 +140,19 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(width: 12),
 
                           IconButton(
-                            tooltip: 'Lights Out game',
+                            tooltip: 'Lights On game',
                             icon: const Icon(Icons.extension_outlined),
-                            onPressed: () => showGameMainMenuDialog(context),
+                            onPressed: () async {
+                              final shouldStart =
+                                  await showGameMainMenuDialog(context);
+                              if (shouldStart != true || !context.mounted) {
+                                return;
+                              }
+                              await showGameDialog(
+                                context,
+                                gameService: gameService,
+                              );
+                            },
                           ),
 
                           const SizedBox(width: 4),

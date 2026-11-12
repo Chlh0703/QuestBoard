@@ -8,6 +8,7 @@ import 'package:quest_board/services/player_achievements.dart';
 import 'package:quest_board/services/player_service.dart';
 import 'package:quest_board/services/quest_notification_scheduler.dart';
 import 'package:quest_board/services/storage_service.dart';
+import 'package:quest_board/services/game_service.dart';
 
 import 'services/quest_service.dart';
 import 'services/configuration_service.dart';
@@ -35,9 +36,12 @@ Future<void> runMainWindow() async {
   final storageService = StorageService();
   await storageService.initialize();
 
+  final gameService = GameService(storageService);
+  await gameService.initialize();
+
   final questRepository = HiveQuestRepository(storageService);
   // For some test reasons:
-  // await questRepository.clearAll();
+  await questRepository.clearAll();
 
 
   final configurationService = ConfigurationService(storageService);
@@ -81,6 +85,7 @@ Future<void> runMainWindow() async {
       questController: questController,
       playerService: playerService,
       playerAchievements: playerAchievements,
+      gameService: gameService,
     ),
   );
 }

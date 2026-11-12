@@ -17,7 +17,7 @@ class GameMainMenuDialog extends StatelessWidget {
         children: [
           Icon(Icons.extension_outlined),
           SizedBox(width: 12),
-          Text('Lights Out'),
+          Text('Lights On'),
         ],
       ),
       content: SizedBox(
