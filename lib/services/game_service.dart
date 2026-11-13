@@ -83,15 +83,26 @@ class GameService extends ChangeNotifier {
   }
 
   List<int> _targetForCurrentLevel() {
-    // Per la serie 1 que es mantingi la meta sigui iluminar tots
-    if (seriesNumber == 1) return List<int>.filled(boardCellCount, 1);
+    var brushCode = 0;
+    for (final cell in _game.brush) {
+      brushCode = (brushCode << 1) | cell;
+    }
 
-    // Per la resta de series arribar a un dibuix
-    final random = Random(_game.levelNumber);
-    final randomTarget = List<int>.generate(
-      boardCellCount,
-      (_) => random.nextInt(stateCount),
-    );
+    // Derive the target from saved game data so it stays the same after reload.
+    final random = Random(_game.levelNumber * 512 + brushCode);
+    final minimumTaps = _game.levelNumber;
+    final tapCount = minimumTaps + random.nextInt((minimumTaps * 2) - minimumTaps + 1);
+    var randomTarget = List<int>.filled(boardCellCount, 0);
+
+    for (var tap = 0; tap < tapCount; tap++) {
+      randomTarget = _applyBrush(
+        randomTarget,
+        random.nextInt(boardWidth),
+        random.nextInt(boardWidth),
+        _game.brush,
+        stateCount,
+      );
+    }
 
     return randomTarget;
   }
@@ -100,15 +111,12 @@ class GameService extends ChangeNotifier {
     final brush = List<int>.filled(3 * 3, 0);
     brush[brush.length ~/ 2] = 1;
 
-    // Estos son los cardinales, que irian del 1 al 7 de 2 en 2
-    for (int index = 1; index < 8; index += 2) {
-      if (_random.nextBool()) brush[index] = 1;
-    }
-    // Diagonales 0 a 8, pero solo seleciona 1
-    const diagonalIndexes = [0, 2, 6, 8];
-    if (_random.nextBool()) {
-      final index = diagonalIndexes[_random.nextInt(diagonalIndexes.length)];
-      brush[index] = 1;
+    for (var index = 0; index < brush.length; index++) {
+      if (index == brush.length ~/ 2) {
+        brush[brush.length ~/ 2] = 1;
+      } else if (_random.nextBool()) {
+        brush[index] = 1;
+      }
     }
 
     return brush;
