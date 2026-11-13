@@ -35,14 +35,13 @@ void main() async {
 Future<void> runMainWindow() async {
   final storageService = StorageService();
   await storageService.initialize();
+  // For some test reasons
+  storageService.clearDatabase();
 
   final gameService = GameService(storageService);
   await gameService.initialize();
 
   final questRepository = HiveQuestRepository(storageService);
-  // For some test reasons:
-  await questRepository.clearAll();
-
 
   final configurationService = ConfigurationService(storageService);
   final configuration = await configurationService.loadConfiguration();

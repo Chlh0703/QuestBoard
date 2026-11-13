@@ -6,7 +6,7 @@ import '../models/game_model.dart';
 import 'storage_service.dart';
 
 class GameService extends ChangeNotifier {
-  static const int boardWidth = 5;
+  static const int boardWidth = 6;
   static const int boardCellCount = boardWidth * boardWidth;
 
   final StorageService _storage;
@@ -17,7 +17,7 @@ class GameService extends ChangeNotifier {
   GameService(this._storage);
 
   int get levelNumber => _game.levelNumber;
-  int get seriesNumber => (_game.levelNumber / 15).round() + 1;
+  int get seriesNumber => (_game.levelNumber / 15).truncate() + 1;
   int get levelInSeries => _game.levelNumber % 15;
   int get energyUsed => _game.energyUsed;
   int get energyRemaining => _game.energyRemaining;
@@ -122,7 +122,7 @@ class GameService extends ChangeNotifier {
     int numberOfStates,
   ) {
     if (row < 0 || row >= boardWidth || column < 0 || column >= boardWidth) {
-      throw RangeError('Tapped cell must be inside the 5×5 board.');
+      throw RangeError('Tapped cell must be inside the 6×6 board.');
     }
 
     final nextBoard = List<int>.of(currentBoard);

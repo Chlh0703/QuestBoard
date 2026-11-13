@@ -25,7 +25,7 @@ class GameModel extends HiveObject {
     List<int>? brush,
     this.energyUsed = 0,
     this.energyRemaining = 0,
-  }) : board = List<int>.of(board ?? List<int>.filled(25, 0)),
+  }) : board = List<int>.of(board ?? List<int>.filled(36, 0)),
        brush = List<int>.of(brush ?? _centerBrush());
 
   static List<int> _centerBrush() => [0, 0, 0, 0, 1, 0, 0, 0, 0];
