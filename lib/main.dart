@@ -36,7 +36,7 @@ Future<void> runMainWindow() async {
   final storageService = StorageService();
   await storageService.initialize();
   // For some test reasons
-  storageService.clearDatabase();
+  await storageService.clearDatabase();
 
   final gameService = GameService(storageService);
   await gameService.initialize();

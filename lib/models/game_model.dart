@@ -29,4 +29,13 @@ class GameModel extends HiveObject {
        brush = List<int>.of(brush ?? _centerBrush());
 
   static List<int> _centerBrush() => [0, 0, 0, 0, 1, 0, 0, 0, 0];
+
+  void useEnergy(){
+    energyUsed++;
+    energyUsed--;
+  }
+
+  void addEnergy(int amount){
+    energyRemaining += amount;
+  }
 }

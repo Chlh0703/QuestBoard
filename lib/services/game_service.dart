@@ -17,11 +17,11 @@ class GameService extends ChangeNotifier {
   GameService(this._storage);
 
   int get levelNumber => _game.levelNumber;
-  int get seriesNumber => (_game.levelNumber / 15).truncate() + 1;
-  int get levelInSeries => _game.levelNumber % 15;
+  int get seriesNumber => ((_game.levelNumber - 1) ~/ 15) + 1;
+  int get levelInSeries => ((_game.levelNumber - 1) % 15) + 1;
   int get energyUsed => _game.energyUsed;
   int get energyRemaining => _game.energyRemaining;
-  int get stateCount => seriesNumber == 3 ? 4 : 2;
+  int get stateCount => seriesNumber == 2 ? 4 : 2;
   List<int> get brush => List.unmodifiable(_game.brush);
   List<int> get board => List.unmodifiable(_game.board);
   List<int> get target => List.unmodifiable(_targetForCurrentLevel());
@@ -42,6 +42,7 @@ class GameService extends ChangeNotifier {
   Future<void> tapCell(int row, int column) async {
     _ensureInitialized();
     if (isSolved) return;
+    if (energyRemaining <= 0) return;
 
     _game.board = _applyBrush(
       _game.board,
@@ -50,6 +51,7 @@ class GameService extends ChangeNotifier {
       _game.brush,
       stateCount,
     );
+    _game.useEnergy();
     notifyListeners();
     await _storage.saveGame(_game);
   }
@@ -72,7 +74,7 @@ class GameService extends ChangeNotifier {
 
   Future<bool> advanceToNextLevel() async {
     _ensureInitialized();
-    if (!isSolved || _game.levelNumber == 45) return false;
+    if (!isSolved || _game.levelNumber == 30) return false;
 
     _game.levelNumber++;
     _game.brush = _createRandomBrush();
@@ -87,10 +89,9 @@ class GameService extends ChangeNotifier {
     for (final cell in _game.brush) {
       brushCode = (brushCode << 1) | cell;
     }
-
-    // Derive the target from saved game data so it stays the same after reload.
+    // Agafar segons el nivel aixi es
     final random = Random(_game.levelNumber * 512 + brushCode);
-    final minimumTaps = _game.levelNumber;
+    final minimumTaps = levelInSeries;
     final tapCount = minimumTaps + random.nextInt((minimumTaps * 2) - minimumTaps + 1);
     var randomTarget = List<int>.filled(boardCellCount, 0);
 

@@ -66,7 +66,7 @@ class GameDialog extends StatelessWidget {
     return AnimatedBuilder(
       animation: gameService,
       builder: (context, child) {
-        final colors = gameService.stateCount != 2 ? _binaryColors : _colorCycle;
+        final colors = gameService.stateCount == 2 ? _binaryColors : _colorCycle;
 
         return Dialog(
           child: SizedBox(
@@ -145,12 +145,12 @@ class GameDialog extends StatelessWidget {
                         FilledButton.icon(
                           onPressed: () => _continue(context),
                           icon: Icon(
-                            gameService.levelNumber == 45
+                            gameService.levelNumber == 30
                                 ? Icons.check
                                 : Icons.arrow_forward,
                           ),
                           label: Text(
-                            gameService.levelNumber == 45 ? 'Finish' : 'Next level',
+                            gameService.levelNumber == 30 ? 'Finish' : 'Next level',
                           ),
                         ),
                     ],
