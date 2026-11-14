@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:quest_board/models/task_model.dart';
 import 'package:quest_board/services/player_achievements.dart';
 import 'package:quest_board/services/player_service.dart';
+import 'package:quest_board/services/game_service.dart';
 import 'package:quest_board/services/quest_notification_scheduler.dart';
 import 'package:quest_board/services/quest_overlay_notifier.dart';
 import 'package:quest_board/services/repeated_quest_service.dart';
@@ -16,6 +17,7 @@ class QuestService extends ChangeNotifier {
   final QuestRepository _questRepository;
   final PlayerService _playerService;
   final PlayerAchievements _playerAchievements;
+  final GameService _gameService;
   final QuestNotificationScheduler _notificationScheduler;
 
   final List<QuestModel> _quests = [];
@@ -30,6 +32,7 @@ class QuestService extends ChangeNotifier {
   QuestService(
     this._playerService,
     this._playerAchievements, {
+    required this._gameService,
     required this._overlayNotifier,
     required this._questRepository,
     required this._notificationScheduler,
@@ -211,6 +214,7 @@ class QuestService extends ChangeNotifier {
       if (completionChanged) {
         if (quest.completed) {
           await _playerService.addExperience(quest.experienceReward);
+          await _gameService.addEnergy((quest.experienceReward * 0.1).truncate());
           if (!quest.paused) quest.togglePaused();
           _playerService.statistics.registerQuestCompleted(
             quest.classification,
@@ -218,6 +222,7 @@ class QuestService extends ChangeNotifier {
           );
         } else {
           await _playerService.addExperience(-quest.experienceReward);
+          await _gameService.addEnergy(-(quest.experienceReward * 0.1).truncate());
           _playerService.statistics.registerQuestCompleted(
             quest.classification,
             false,

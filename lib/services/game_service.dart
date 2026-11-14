@@ -56,6 +56,13 @@ class GameService extends ChangeNotifier {
     await _storage.saveGame(_game);
   }
 
+  Future<void> addEnergy(int amount) async {
+    _ensureInitialized();
+    _game.addEnergy(amount);
+    notifyListeners();
+    await _storage.saveGame(_game);
+  }
+
   Future<void> restartLevel() async {
     _ensureInitialized();
     _game.board = List<int>.filled(boardCellCount, 0);

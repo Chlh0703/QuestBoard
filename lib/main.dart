@@ -35,11 +35,13 @@ void main() async {
 Future<void> runMainWindow() async {
   final storageService = StorageService();
   await storageService.initialize();
-  // For some test reasons
+  // For some test reasons...
   await storageService.clearDatabase();
 
   final gameService = GameService(storageService);
   await gameService.initialize();
+  // Just wanted to play xD
+  gameService.addEnergy(100000);
 
   final questRepository = HiveQuestRepository(storageService);
 
@@ -64,6 +66,7 @@ Future<void> runMainWindow() async {
   final questService = QuestService(
     playerService,
     playerAchievements,
+    gameService: gameService,
     overlayNotifier: WindowService(),
     questRepository: questRepository,
     notificationScheduler: notificationScheduler,

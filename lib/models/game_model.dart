@@ -30,12 +30,12 @@ class GameModel extends HiveObject {
 
   static List<int> _centerBrush() => [0, 0, 0, 0, 1, 0, 0, 0, 0];
 
-  void useEnergy(){
+  void useEnergy() {
     energyUsed++;
-    energyUsed--;
+    energyRemaining--;
   }
 
-  void addEnergy(int amount){
+  void addEnergy(int amount) {
     energyRemaining += amount;
   }
 }

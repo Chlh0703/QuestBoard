@@ -88,7 +88,8 @@ class GameDialog extends StatelessWidget {
                             ),
                             Text(
                               'Series ${gameService.seriesNumber} · '
-                              'Level ${gameService.levelInSeries} / 15',
+                              'Level ${gameService.levelInSeries} / 15 ·'
+                              'Energy ${gameService.energyRemaining}',
                             ),
                           ],
                         ),
