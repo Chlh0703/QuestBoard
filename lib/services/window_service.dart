@@ -16,6 +16,8 @@ class MainWindowListener extends WindowListener{
 }
 
 class WindowService implements QuestOverlayNotifier {
+  static const Size _mainWindowMinimumSize = Size(1100, 525);
+
   static WindowController? _overlayWindow;
 
   static final MainWindowListener _mainWindowListener = MainWindowListener();
@@ -31,6 +33,7 @@ class WindowService implements QuestOverlayNotifier {
 
   static Future<void> setupMainWindow() async {
     await windowManager.ensureInitialized();
+    await windowManager.setMinimumSize(_mainWindowMinimumSize);
 
     const windowOptions = WindowOptions(
       size: Size(1200, 800),

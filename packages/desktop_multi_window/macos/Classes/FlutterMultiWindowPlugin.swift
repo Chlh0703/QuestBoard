@@ -295,7 +295,7 @@ func overlayFrame() -> NSRect {
 
 final class OverlayDragRegionView: NSView {
     private let resizeThickness: CGFloat = 15
-    private let minimumWidth: CGFloat = 250
+    private let minimumWidth: CGFloat = 255
     private let aspectRatio: CGFloat = 400.0 / 350.0
 
     private let dragRegionHeight: CGFloat = 80

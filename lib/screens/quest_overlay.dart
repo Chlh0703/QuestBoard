@@ -93,7 +93,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
               onExit: (_) => _startHideTimer(),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(8),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -151,39 +151,40 @@ class _QuestOverlayState extends State<QuestOverlay> {
                             ),
                           ],
                         ),
-                        DefaultTabController(
-                          length: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TabBar(
-                                tabs: const [
-                                  Tab(text: 'P'),
-                                  Tab(text: 'S'),
-                                  Tab(text: 'R'),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              SizedBox(
-                                height: 160,
-                                child: TabBarView(
-                                  children: [
-                                    OverlayQuestList(
-                                      quests: widget.overlayQuestService.quests.where((x) => x.classification == 1).toList(),
-                                      onTaskTap: _toggleTask,
-                                    ),
-                                    OverlayQuestList(
-                                      quests: widget.overlayQuestService.quests.where((x) => x.classification == 2).toList(),
-                                      onTaskTap: _toggleTask,
-                                    ),
-                                    OverlayQuestList(
-                                      quests: widget.overlayQuestService.quests.where((x) => x.classification == 3).toList(),
-                                      onTaskTap: _toggleTask,
-                                    ),
+                        Expanded(
+                          child: DefaultTabController(
+                            length: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TabBar(
+                                  tabs: const [
+                                    Tab(text: 'P'),
+                                    Tab(text: 'S'),
+                                    Tab(text: 'R'),
                                   ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 8),
+                                Expanded(
+                                  child: TabBarView(
+                                    children: [
+                                      OverlayQuestList(
+                                        quests: widget.overlayQuestService.quests.where((x) => x.classification == 1).toList(),
+                                        onTaskTap: _toggleTask,
+                                      ),
+                                      OverlayQuestList(
+                                        quests: widget.overlayQuestService.quests.where((x) => x.classification == 2).toList(),
+                                        onTaskTap: _toggleTask,
+                                      ),
+                                      OverlayQuestList(
+                                        quests: widget.overlayQuestService.quests.where((x) => x.classification == 3).toList(),
+                                        onTaskTap: _toggleTask,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

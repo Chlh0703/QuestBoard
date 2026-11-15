@@ -167,7 +167,7 @@ void showTaskDialog(
                   }
 
                   int? currentCount =
-                  int.tryParse(currentCountController.text.trim());
+                  int.tryParse(currentCountController.text.trim()) ?? 0;
 
                   final int? targetCount =
                   int.tryParse(targetCountController.text.trim());
@@ -177,12 +177,11 @@ void showTaskDialog(
                       targetCountController.text.trim().isEmpty) {
                     currentCount = null;
                   } else {
-                    // Si se configura un objetivo, ambos campos deben ser válidos.
-                    if (targetCount == null || currentCount == null) {
+                    if (targetCount == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            'Enter both Current Count and Target Count.',
+                            'Enter both Target Count.',
                           ),
                         ),
                       );
