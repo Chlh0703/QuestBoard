@@ -59,6 +59,23 @@ void SetClickThrough(HWND hwnd, bool enabled) {
     );
 }
 
+bool SetAlwaysOnTop(HWND hwnd, bool enabled) {
+    if (hwnd == nullptr || !IsWindow(hwnd)) {
+        return false;
+    }
+
+    HWND insert_after = enabled ? HWND_TOPMOST : HWND_NOTOPMOST;
+
+    return SetWindowPos(
+        hwnd,
+        insert_after,
+        0, 0, 0, 0,
+        SWP_NOMOVE |
+        SWP_NOSIZE |
+        SWP_NOACTIVATE
+    ) != FALSE;
+}
+
 DesktopMultiWindowPlugin::DesktopMultiWindowPlugin(
     FlutterWindowWrapper* window,
     flutter::PluginRegistrarWindows* registrar)
@@ -98,6 +115,13 @@ DesktopMultiWindowPlugin::DesktopMultiWindowPlugin(
 
             if (call.method_name() == "disableClickThrough") {
                 SetClickThrough(hwnd, false);
+                result->Success();
+                return;
+            }
+
+            if (call.method_name() == "disableClickThrough") {
+                const auto* value = std::get_if<bool>(method_call.arguments());
+                SetAlwaysOnTop(hwnd, value);
                 result->Success();
                 return;
             }
