@@ -16,10 +16,4 @@ class OverlayController extends ChangeNotifier { // Controllador de overlay
     await OverlayService.enableClickThrough();
     notifyListeners();
   }
-
-  void toggle() {
-    visible = !visible;
-    notifyListeners();
-  }
-
 }

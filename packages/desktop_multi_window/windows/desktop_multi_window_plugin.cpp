@@ -5,11 +5,14 @@
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
+#include <string>
+#include <variant>
 #include <memory>
 
 #include "flutter_window_wrapper.h"
 #include "multi_window_manager.h"
 #include "window_channel_plugin.h"
+#include <Windows.h>
 
 namespace {
 
@@ -25,9 +28,36 @@ class DesktopMultiWindowPlugin : public flutter::Plugin {
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
 
+  std::shared_ptr<flutter::MethodChannel<>> overlay_channel_;
+
   FlutterWindowWrapper* window_;
   flutter::PluginRegistrarWindows* registrar_;
 };
+
+void SetClickThrough(HWND hwnd, bool enabled) {
+    LONG_PTR ex_style = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+
+    if (hwnd == nullptr || !IsWindow(hwnd)) {
+        return;
+    }
+
+    if (enabled) {
+        ex_style |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
+    } else {
+        ex_style &= ~WS_EX_TRANSPARENT;
+    }
+
+    SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_style);
+
+    SetWindowPos(
+        hwnd,
+        nullptr,
+        0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE |
+        SWP_NOZORDER | SWP_NOACTIVATE |
+        SWP_FRAMECHANGED
+    );
+}
 
 DesktopMultiWindowPlugin::DesktopMultiWindowPlugin(
     FlutterWindowWrapper* window,
@@ -46,6 +76,35 @@ DesktopMultiWindowPlugin::DesktopMultiWindowPlugin(
 
   // Register WindowChannel plugin for each engine
   WindowChannelPluginRegisterWithRegistrar(registrar);
+
+  if (window_->GetWindowArgument().find("\"overlay\"") !=
+  std::string::npos) {
+    overlay_channel_ =
+      std::make_shared<flutter::MethodChannel<>>(
+        registrar->messenger(),
+        "questboard/overlay",
+        &flutter::StandardMethodCodec::GetInstance());
+
+    HWND hwnd = window_->GetWindowHandle();
+
+    overlay_channel_->SetMethodCallHandler(
+        [hwnd](const flutter::MethodCall<>& call,
+               std::unique_ptr<flutter::MethodResult<>> result) {
+            if (call.method_name() == "enableClickThrough") {
+                SetClickThrough(hwnd, true);
+                result->Success();
+                return;
+            }
+
+            if (call.method_name() == "disableClickThrough") {
+                SetClickThrough(hwnd, false);
+                result->Success();
+                return;
+            }
+            result->NotImplemented();
+        }
+    );
+  }
 }
 
 DesktopMultiWindowPlugin::~DesktopMultiWindowPlugin() {
