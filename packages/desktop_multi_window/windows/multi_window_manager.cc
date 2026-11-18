@@ -17,6 +17,8 @@
 
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
+#include <flutter/plugin_registrar_windows.h>
+#include <flutter/plugin_registrar_manager.h>
 
 namespace {
 
@@ -152,10 +154,13 @@ void MultiWindowManager::AttachFlutterMainWindow(
 
   windows_[window_id] = std::move(wrapper);
 
-  InternalMultiWindowPluginRegisterWithRegistrar(registrar,
-                                                 windows_[window_id].get());
+  InternalMultiWindowPluginRegisterWithRegistrar(registrar,windows_[window_id].get());
+
+  auto* cpp_registrar = flutter::PluginRegistrarManager::GetInstance()->GetRegistrar<flutter::PluginRegistrarWindows>(registrar);
+
   _main_channel =
       std::make_unique<AppChannel>(
+          cpp_registrar->messenger(),
           "questboard/main",
           &flutter::StandardMethodCodec::GetInstance()
         );
