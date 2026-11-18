@@ -181,9 +181,7 @@ class MultiWindowManager: NSObject {
                 positioned: .above,
                 relativeTo: nil
             )
-        }
 
-        if config.arguments.contains("\"overlay\"") {
             flutterViewController.backgroundColor = .clear
 
             let overlayChannel = FlutterMethodChannel(

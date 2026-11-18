@@ -15,6 +15,9 @@
 #include "win32_window.h"
 #include "window_configuration.h"
 
+#include <flutter/method_channel.h>
+#include <flutter/standard_method_codec.h>
+
 namespace {
 
 std::string GenerateWindowId() {
@@ -31,6 +34,13 @@ std::string GenerateWindowId() {
 }
 
 WindowCreatedCallback _g_window_created_callback = nullptr;
+
+HWND _main_window_handle = nullptr;
+
+using AppChannel = flutter::MethodChannel<flutter::EncodableValue>;
+
+std::unique_ptr<AppChannel> _overlay_channel;
+std::unique_ptr<AppChannel> _main_channel;
 
 }  // namespace
 
@@ -68,6 +78,47 @@ std::string MultiWindowManager::Create(const flutter::EncodableMap* args) {
   if (_g_window_created_callback) {
     _g_window_created_callback(flutter_window->GetFlutterViewController());
   }
+  auto* engine = flutter_window->GetFlutterViewController()->engine();
+
+  _overlay_channel =
+      std::make_unique<OverlayChannel>(
+          engine->messenger(),
+          "questboard/overlay",
+          &flutter::StandardMethodCodec::GetInstance()
+      );
+
+  _overlay_channel->SetMethodCallHandler(
+      [window_handle = flutter_window->GetHandle()](
+          const flutter::MethodCall<flutter::EncodableValue>& call,
+          std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result
+      ) {
+          if (call.method_name() == "enableClickThrough") {
+              LONG_PTR style =
+                  GetWindowLongPtr(window_handle, GWL_EXSTYLE);
+
+              SetWindowLongPtr(
+                  window_handle,
+                  GWL_EXSTYLE,
+                  style | WS_EX_TRANSPARENT | WS_EX_LAYERED
+              );
+
+              SetWindowPos(
+                  window_handle,
+                  nullptr,
+                  0, 0, 0, 0,
+                  SWP_NOMOVE |
+                  SWP_NOSIZE |
+                  SWP_NOZORDER |
+                  SWP_FRAMECHANGED
+              );
+              result->Success();
+          }
+          else {
+              result->NotImplemented();
+          }
+      }
+  );
+
   auto registrar = flutter_window->GetFlutterViewController()
                        ->engine()
                        ->GetRegistrarForPlugin("DesktopMultiWindowPlugin");
@@ -103,7 +154,44 @@ void MultiWindowManager::AttachFlutterMainWindow(
 
   InternalMultiWindowPluginRegisterWithRegistrar(registrar,
                                                  windows_[window_id].get());
+  main_channel =
+      std::make_unique<OverlayChannel>(
+          "questboard/main",
+          &flutter::StandardMethodCodec::GetInstance()
+        );
 
+  main_channel->SetMethodCallHandler(
+      [window_handle](
+          const flutter::MethodCall<flutter::EncodableValue>& call,
+          std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result
+      ) {
+
+          if (call.method_name() == "setAlwaysOnTop") {
+              const auto* arguments = call.arguments();
+              if (arguments == nullptr ||
+                  !std::holds_alternative<bool>(*arguments)) {
+
+                  result->Error(
+                      "INVALID_ARGUMENT",
+                      "Expected a boolean argument."
+                  );
+                return;
+              }
+
+              const bool enabled = std::get<bool>(*arguments);
+
+              SetWindowPos(
+                  window_handle,
+                  enabled ? HWND_TOPMOST : HWND_NOTOPMOST,
+                  0, 0, 0, 0,
+                  SWP_NOMOVE | SWP_NOSIZE
+              );
+              result->Success();
+          } else {
+              result->NotImplemented();
+          }
+      }
+  );
   // Notify all windows about the change
   NotifyWindowsChanged();
 }
