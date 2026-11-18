@@ -81,7 +81,7 @@ std::string MultiWindowManager::Create(const flutter::EncodableMap* args) {
   auto* engine = flutter_window->GetFlutterViewController()->engine();
 
   _overlay_channel =
-      std::make_unique<OverlayChannel>(
+      std::make_unique<AppChannel>(
           engine->messenger(),
           "questboard/overlay",
           &flutter::StandardMethodCodec::GetInstance()
@@ -154,13 +154,13 @@ void MultiWindowManager::AttachFlutterMainWindow(
 
   InternalMultiWindowPluginRegisterWithRegistrar(registrar,
                                                  windows_[window_id].get());
-  main_channel =
-      std::make_unique<OverlayChannel>(
+  _main_channel =
+      std::make_unique<AppChannel>(
           "questboard/main",
           &flutter::StandardMethodCodec::GetInstance()
         );
 
-  main_channel->SetMethodCallHandler(
+  _main_channel->SetMethodCallHandler(
       [window_handle](
           const flutter::MethodCall<flutter::EncodableValue>& call,
           std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result
