@@ -18,7 +18,6 @@
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
 #include <flutter/plugin_registrar_windows.h>
-#include <flutter/plugin_registrar_manager.h>
 
 namespace {
 
@@ -114,8 +113,23 @@ std::string MultiWindowManager::Create(const flutter::EncodableMap* args) {
                   SWP_FRAMECHANGED
               );
               result->Success();
-          }
-          else {
+          } else if (call.method_name() == "disableClickThrough") {
+              LONG_PTR style = GetWindowLongPtr(window_handle, GWL_EXSTYLE);
+              SetWindowLongPtr(
+                  window_handle,
+                  GWL_EXSTYLE,
+                  style & ~WS_EX_TRANSPARENT
+              );
+
+              SetWindowPos(
+                  window_handle,
+                  nullptr,
+                  0, 0, 0, 0,
+                  SWP_NOMOVE | SWP_NOSIZE |
+                  SWP_NOZORDER | SWP_FRAMECHANGED
+              );
+              result->Success();
+          } else {
               result->NotImplemented();
           }
       }
