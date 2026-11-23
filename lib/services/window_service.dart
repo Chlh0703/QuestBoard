@@ -57,7 +57,7 @@ class WindowService implements QuestOverlayNotifier {
   }
 
   static Future<void> createOverlayWindow() async {
-    _overlayWindow = await WindowController.create(const WindowConfiguration(arguments: '{"window":"overlay"}', hiddenAtLaunch: true,),);
+    _overlayWindow = await WindowController.create(const WindowConfiguration(arguments: '{"window":"overlay"}', hiddenAtLaunch: false,),);
   }
 
   static Future<void> showOverlay() async {
