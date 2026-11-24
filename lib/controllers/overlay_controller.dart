@@ -4,6 +4,7 @@ import '../services/overlay_service.dart';
 
 class OverlayController extends ChangeNotifier { // Controllador de overlay
   bool visible = false;
+  static bool alwaysOnTop = true;
 
   Future<void> show() async {
     visible = true;
@@ -15,5 +16,10 @@ class OverlayController extends ChangeNotifier { // Controllador de overlay
     visible = false;
     await OverlayService.enableClickThrough();
     notifyListeners();
+  }
+
+  static Future<void> setAlwaysOnTop(bool value) async {
+    alwaysOnTop = value;
+    await OverlayService.setAlwaysOnTop(value);
   }
 }

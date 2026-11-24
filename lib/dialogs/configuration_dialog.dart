@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:quest_board/services/hotkey_service.dart';
 
-import '../services/overlay_service.dart';
+import '../controllers/overlay_controller.dart';
 import '../services/configuration_service.dart';
 import '../services/quest_service.dart';
 
@@ -27,7 +27,7 @@ class ConfigurationDialog extends StatefulWidget {
 class _ConfigurationDialogState extends State<ConfigurationDialog> {
   late HotKeyModifier selectedModifier = HotkeyService.modifierKey;
   late PhysicalKeyboardKey selectedKey = HotkeyService.mainKey;
-  bool isAlwaysOnTop = OverlayService.isAlwaysOnTop;
+  bool isAlwaysOnTop = OverlayController.alwaysOnTop;
   bool notificationsEnabled = QuestService.notificationsEnabled;
 
   final List<HotKeyModifier> modifiers = HotKeyModifier.values;

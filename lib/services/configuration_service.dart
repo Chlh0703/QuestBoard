@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:quest_board/controllers/overlay_controller.dart';
 import 'package:quest_board/services/quest_service.dart';
 import 'package:quest_board/models/configuration_model.dart';
 
@@ -39,7 +40,7 @@ class ConfigurationService {
 
   Future<void> setOverlayAlwaysOnTop(bool alwaysOnTop) async {
     try {
-      await OverlayService.setAlwaysOnTop(alwaysOnTop);
+      await OverlayController.setAlwaysOnTop(alwaysOnTop);
       await _updateConfiguration((configuration) {
         configuration.alwaysOnTop = alwaysOnTop;
       });

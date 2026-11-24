@@ -55,7 +55,7 @@ class _QuestOverlayState extends State<QuestOverlay> {
     _hideTimer = Timer( // Aqui es donde define cuanto dura y que hace
       const Duration(seconds: 3),
           () async {
-        widget.overlayController.hide();
+        WindowService.hideOverlay();
       },
     );
   }

@@ -80,7 +80,7 @@ Future<void> runMainWindow() async {
   await WindowService.setupMainWindow();
   await WindowService.initializeMainReceiver(questController);
   await WindowService.createOverlayWindow();
-  await OverlayService.setAlwaysOnTop(configuration.alwaysOnTop);
+  await OverlayController.setAlwaysOnTop(configuration.alwaysOnTop);
 
   runApp(
     QuestBoardApp(
