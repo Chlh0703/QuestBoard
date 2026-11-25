@@ -2,12 +2,14 @@ import Cocoa
 
 // donde termina y donde hago yo
 
-class OverlayWindow: CustomWindow {
+class OverlayWindow: NSPanel {
 
-    override init(configuration: WindowConfiguration) {
-        super.init(configuration: configuration)
-
-        styleMask = [.borderless]
+    init() {
+        super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel],
+                   backing: .buffered, defer: false)
+        hidesOnDeactivate = false
+        becomesKeyOnlyIfNeeded = true
+        isReleasedWhenClosed = false
 
         isOpaque = false
         backgroundColor = .clear

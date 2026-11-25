@@ -96,12 +96,19 @@ class FlutterWindow: NSObject {
         }
     }
 
+    static func present(_ window: NSWindow) {
+        if window is OverlayWindow {
+            window.orderFrontRegardless()
+        } else {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
     func handleWindowMethod(method: String, arguments: Any?, result: @escaping FlutterResult) {
         switch method {
         case "window_show":
-            window.makeKeyAndOrderFront(nil)
-            window.setIsVisible(true)
-            NSApp.activate(ignoringOtherApps: true)
+            Self.present(window)
             result(nil)
         case "window_hide":
             window.orderOut(nil)

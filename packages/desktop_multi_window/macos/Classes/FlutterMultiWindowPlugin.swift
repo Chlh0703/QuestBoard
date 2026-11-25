@@ -152,10 +152,10 @@ class MultiWindowManager: NSObject {
 
         let config = WindowConfiguration.fromJson(arguments)
 
-        let window: CustomWindow
+        let window: NSWindow
 
         if config.arguments.contains("\"overlay\"") {
-            window = OverlayWindow(configuration: config)
+            window = OverlayWindow()
         } else {
             window = CustomWindow(configuration: config)
         }
@@ -214,8 +214,7 @@ class MultiWindowManager: NSObject {
             }
         }
 
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        FlutterWindow.present(window)
 
         FlutterMultiWindowPlugin.onWindowCreatedCallback?(flutterViewController)
 
