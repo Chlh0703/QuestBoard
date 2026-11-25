@@ -1,6 +1,8 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <desktop_multi_window/desktop_multi_window_plugin.h>
+#include <window_manager/window_manager_plugin.h>
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -25,6 +27,11 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
+  DesktopMultiWindowSetWindowCreatedCallback([](void* controller) {
+    auto* view = static_cast<flutter::FlutterViewController*>(controller);
+    WindowManagerPluginRegisterWithRegistrar(
+        view->engine()->GetRegistrarForPlugin("WindowManagerPlugin"));
+  });
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {

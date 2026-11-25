@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:quest_board/controllers/quest_controller.dart';
 import 'package:quest_board/repositories/hive_quest_repository.dart';
@@ -14,7 +17,6 @@ import 'services/quest_service.dart';
 import 'services/configuration_service.dart';
 import 'controllers/overlay_controller.dart';
 import 'services/window_service.dart';
-import 'services/overlay_service.dart';
 import 'services/hotkey_service.dart';
 import 'apps/quest_board_app.dart';
 import 'apps/overlay_app.dart';
@@ -93,6 +95,11 @@ Future<void> runMainWindow() async {
 }
 
 Future<void> runOverlayWindow() async {
+  if (Platform.isWindows) {
+    await windowManager.ensureInitialized();
+    await windowManager.setAsFrameless();
+    await windowManager.setBackgroundColor(Colors.transparent);
+  }
   final overlayController = OverlayController();
   final overlayQuestService = OverlayQuestService([]);
   await WindowService.initializeOverlayReceiver(
