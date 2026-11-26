@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -21,7 +19,7 @@ import 'services/hotkey_service.dart';
 import 'apps/quest_board_app.dart';
 import 'apps/overlay_app.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final windowController = await WindowController.fromCurrentEngine();
@@ -95,11 +93,13 @@ Future<void> runMainWindow() async {
 }
 
 Future<void> runOverlayWindow() async {
-  if (Platform.isWindows) {
-    await windowManager.ensureInitialized();
-    await windowManager.setAsFrameless();
-    await windowManager.setBackgroundColor(Colors.transparent);
-  }
+  await windowManager.ensureInitialized();
+  await windowManager.setAsFrameless();
+  await windowManager.setResizable(true);
+  await windowManager.setMinimumSize(const Size(255, 223));
+  await windowManager.setSize(const Size(400, 350));
+  await windowManager.setBackgroundColor(Colors.transparent);
+
   final overlayController = OverlayController();
   final overlayQuestService = OverlayQuestService([]);
   await WindowService.initializeOverlayReceiver(

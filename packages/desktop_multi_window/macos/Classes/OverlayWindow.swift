@@ -11,10 +11,6 @@ class OverlayWindow: NSPanel {
         becomesKeyOnlyIfNeeded = true
         isReleasedWhenClosed = false
 
-        isOpaque = false
-        backgroundColor = .clear
-        hasShadow = false
-
         level = .statusBar
 
         collectionBehavior = [

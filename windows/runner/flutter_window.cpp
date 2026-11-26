@@ -2,7 +2,6 @@
 
 #include <optional>
 #include <desktop_multi_window/desktop_multi_window_plugin.h>
-#include <window_manager/window_manager_plugin.h>
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -26,13 +25,12 @@ bool FlutterWindow::OnCreate() {
   if (!flutter_controller_->engine() || !flutter_controller_->view()) {
     return false;
   }
+  SetChildContent(flutter_controller_->view()->GetNativeWindow());
   RegisterPlugins(flutter_controller_->engine());
   DesktopMultiWindowSetWindowCreatedCallback([](void* controller) {
     auto* view = static_cast<flutter::FlutterViewController*>(controller);
-    WindowManagerPluginRegisterWithRegistrar(
-        view->engine()->GetRegistrarForPlugin("WindowManagerPlugin"));
+    RegisterPlugins(view->engine());
   });
-  SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
     this->Show();
@@ -70,7 +68,9 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
 
   switch (message) {
     case WM_FONTCHANGE:
-      flutter_controller_->engine()->ReloadSystemFonts();
+      if (flutter_controller_ && flutter_controller_->engine()) {
+        flutter_controller_->engine()->ReloadSystemFonts();
+      }
       break;
   }
 
