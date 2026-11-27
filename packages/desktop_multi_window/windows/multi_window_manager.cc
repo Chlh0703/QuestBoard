@@ -180,7 +180,7 @@ void MultiWindowManager::AttachFlutterMainWindow(
         );
 
   _main_channel->SetMethodCallHandler(
-      [window_handle](
+      [this](
           const flutter::MethodCall<flutter::EncodableValue>& call,
           std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result
       ) {
@@ -199,13 +199,24 @@ void MultiWindowManager::AttachFlutterMainWindow(
 
               const bool enabled = std::get<bool>(*arguments);
 
-              SetWindowPos(
-                  window_handle,
-                  enabled ? HWND_TOPMOST : HWND_NOTOPMOST,
-                  0, 0, 0, 0,
-                  SWP_NOMOVE | SWP_NOSIZE
-              );
-              result->Success();
+              for (const auto& entry : managed_flutter_windows_) {
+                const auto& window = entry.second;
+                if (window->GetWindowArgument() != R"({"window":"overlay"})" ||
+                    !IsWindow(window->GetHandle())) {
+                  continue;
+                }
+                if (SetWindowPos(window->GetHandle(),
+                                 enabled ? HWND_TOPMOST : HWND_NOTOPMOST,
+                                 0, 0, 0, 0,
+                                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE)) {
+                  result->Success();
+                } else {
+                  result->Error("SET_WINDOW_POS_FAILED",
+                                "Win32 error " + std::to_string(GetLastError()));
+                }
+                return;
+              }
+              result->Error("OVERLAY_NOT_FOUND", "No live overlay window.");
           } else {
               result->NotImplemented();
           }
