@@ -19,7 +19,7 @@ class OverlayController extends ChangeNotifier { // Controllador de overlay
   }
 
   static Future<void> setAlwaysOnTop(bool value) async {
-    alwaysOnTop = value;
     await OverlayService.setAlwaysOnTop(value);
+    alwaysOnTop = value;
   }
 }

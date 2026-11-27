@@ -25,20 +25,40 @@ class ConfigurationDialog extends StatefulWidget {
 }
 
 class _ConfigurationDialogState extends State<ConfigurationDialog> {
-  late HotKeyModifier selectedModifier = HotkeyService.modifierKey;
-  late PhysicalKeyboardKey selectedKey = HotkeyService.mainKey;
-  bool isAlwaysOnTop = OverlayController.alwaysOnTop;
-  bool notificationsEnabled = QuestService.notificationsEnabled;
+  HotKeyModifier _savedModifier = HotkeyService.modifierKey;
+  PhysicalKeyboardKey _savedKey = HotkeyService.mainKey;
+  bool _savedAlwaysOnTop = OverlayController.alwaysOnTop;
+  bool _savedNotifications = QuestService.notificationsEnabled;
+  late HotKeyModifier selectedModifier = _savedModifier;
+  late PhysicalKeyboardKey selectedKey = _savedKey;
+  late bool isAlwaysOnTop = _savedAlwaysOnTop;
+  late bool notificationsEnabled = _savedNotifications;
 
   final List<HotKeyModifier> modifiers = HotKeyModifier.values;
   final List<PhysicalKeyboardKey> keys = HotkeyService.supportedKeys;
   final ConfigurationService _configurationService = ConfigurationService();
 
   Future<void> saveConfiguration() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    final modifier = selectedModifier;
+    final key = selectedKey;
+    final onTop = isAlwaysOnTop;
+    final notifications = notificationsEnabled;
     try {
-      await _configurationService.updateHotkey(modifier: selectedModifier, key: selectedKey,);
-      await _configurationService.setOverlayAlwaysOnTop(isAlwaysOnTop);
-      await _configurationService.setNotificationsEnabled(notificationsEnabled);
+      if (modifier != _savedModifier || key != _savedKey) {
+        await _configurationService.updateHotkey(modifier: modifier, key: key);
+        _savedModifier = modifier;
+        _savedKey = key;
+      }
+      if (onTop != _savedAlwaysOnTop) {
+        await _configurationService.setOverlayAlwaysOnTop(onTop);
+        _savedAlwaysOnTop = onTop;
+      }
+      if (notifications != _savedNotifications) {
+        await _configurationService.setNotificationsEnabled(notifications);
+        _savedNotifications = notifications;
+      }
 
       if (!mounted) return;
 
@@ -51,6 +71,7 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
       );
     } catch (error) {
       if (!mounted) return;
+      setState(() => _saving = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -59,6 +80,8 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
       );
     }
   }
+
+  bool _saving = false;
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +214,7 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
         ),
 
         FilledButton(
-          onPressed: saveConfiguration,
+          onPressed: _saving ? null : saveConfiguration,
           child: const Text('Save'),
         ),
       ],
