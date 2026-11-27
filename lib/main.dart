@@ -36,12 +36,12 @@ Future<void> runMainWindow() async {
   final storageService = StorageService();
   await storageService.initialize();
   // For some test reasons...
-  //  await storageService.clearDatabase();
+  await storageService.clearDatabase();
 
   final gameService = GameService(storageService);
   await gameService.initialize();
   // Just wanted to play xD
-  // gameService.addEnergy(100000);
+  gameService.addEnergy(100000);
 
   final questRepository = HiveQuestRepository(storageService);
 

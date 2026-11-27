@@ -66,6 +66,8 @@ class GameDialog extends StatelessWidget {
     return AnimatedBuilder(
       animation: gameService,
       builder: (context, child) {
+        final target = gameService.target;
+        final brush = gameService.brush;
         final colors = gameService.stateCount == 2 ? _binaryColors : _colorCycle;
 
         return Dialog(
@@ -88,8 +90,36 @@ class GameDialog extends StatelessWidget {
                             ),
                             Text(
                               'Series ${gameService.seriesNumber} · '
-                              'Level ${gameService.levelInSeries} / 15 ·'
+                              'Level ${gameService.levelInSeries} / 15 · '
                               'Energy ${gameService.energyRemaining}',
+                            ),
+                            Text(
+                              'Optimal clicks: ${gameService.optimalClicks} · '
+                              'Clicks used: ${gameService.clicksUsed}',
+                            ),
+                          ],
+                        ),
+                      ),
+                      Tooltip(
+                        message: 'Filled squares change when you tap the center cell.',
+                        child: Column(
+                          children: [
+                            const Text('Brush pattern'),
+                            Table(
+                              defaultColumnWidth: const FixedColumnWidth(14),
+                              border: TableBorder.all(color: Theme.of(context).dividerColor),
+                              children: [
+                                for (var row = 0; row < 3; row++)
+                                  TableRow(children: [
+                                    for (var col = 0; col < 3; col++)
+                                      Container(
+                                        height: 14,
+                                        color: brush[row * 3 + col] == 1
+                                            ? Theme.of(context).colorScheme.primary
+                                            : Theme.of(context).colorScheme.surface,
+                                      ),
+                                  ]),
+                              ],
                             ),
                           ],
                         ),
@@ -107,7 +137,7 @@ class GameDialog extends StatelessWidget {
                       children: [
                         _BoardPanel(
                           title: 'Target',
-                          cells: gameService.target,
+                          cells: target,
                           colors: colors,
                         ),
                         const SizedBox(width: 28),

@@ -12,6 +12,8 @@ class GameService extends ChangeNotifier {
   final StorageService _storage;
   final Random _random = Random();
   late GameModel _game;
+  int _optimalClicks = -1;
+
   bool _initialized = false;
 
   GameService(this._storage);
@@ -19,6 +21,8 @@ class GameService extends ChangeNotifier {
   int get levelNumber => _game.levelNumber;
   int get seriesNumber => ((_game.levelNumber - 1) ~/ 15) + 1;
   int get levelInSeries => ((_game.levelNumber - 1) % 15) + 1;
+  int get clicksUsed => _game.clicksUsed;
+  int get optimalClicks => _optimalClicks;
   int get energyUsed => _game.energyUsed;
   int get energyRemaining => _game.energyRemaining;
   int get stateCount => seriesNumber == 2 ? 4 : 2;
@@ -52,6 +56,7 @@ class GameService extends ChangeNotifier {
       stateCount,
     );
     _game.useEnergy();
+    _game.clicksUsed++;
     notifyListeners();
     await _storage.saveGame(_game);
   }
@@ -65,6 +70,7 @@ class GameService extends ChangeNotifier {
 
   Future<void> restartLevel() async {
     _ensureInitialized();
+    _game.clicksUsed = 0;
     _game.board = List<int>.filled(boardCellCount, 0);
     notifyListeners();
     await _storage.saveGame(_game);
@@ -73,6 +79,7 @@ class GameService extends ChangeNotifier {
   Future<void> forfeitLevel() async {
     _ensureInitialized();
     _game.levelNumber = _game.levelNumber > 3 ? _game.levelNumber - 3 : 1;
+    _game.clicksUsed = 0;
     _game.board = List<int>.filled(boardCellCount, 0);
     _game.brush = _createRandomBrush();
     notifyListeners();
@@ -85,6 +92,7 @@ class GameService extends ChangeNotifier {
 
     _game.levelNumber++;
     _game.brush = _createRandomBrush();
+    _game.clicksUsed = 0;
     _game.board = List<int>.filled(boardCellCount, 0);
     notifyListeners();
     await _storage.saveGame(_game);
@@ -96,13 +104,14 @@ class GameService extends ChangeNotifier {
     for (final cell in _game.brush) {
       brushCode = (brushCode << 1) | cell;
     }
-    // Agafar segons el nivel aixi es
+    // Agafar segons el nivel aixi es consistent
     final random = Random(_game.levelNumber * 512 + brushCode);
     final minimumTaps = levelInSeries;
-    final tapCount = minimumTaps + random.nextInt((minimumTaps * 2) - minimumTaps + 1);
+    _optimalClicks = minimumTaps + random.nextInt((minimumTaps * 2) - minimumTaps + 1);
+
     var randomTarget = List<int>.filled(boardCellCount, 0);
 
-    for (var tap = 0; tap < tapCount; tap++) {
+    for (var tap = 0; tap < _optimalClicks; tap++) {
       randomTarget = _applyBrush(
         randomTarget,
         random.nextInt(boardWidth),

@@ -20,6 +20,7 @@ class GameModelAdapter extends TypeAdapter<GameModel> {
       board: (fields[0] as List?)?.cast<int>(),
       levelNumber: fields[1] as int,
       brush: (fields[2] as List?)?.cast<int>(),
+      clicksUsed: fields[5] as int? ?? 0,
       energyUsed: fields[3] as int,
       energyRemaining: fields[4] as int,
     );
@@ -28,7 +29,7 @@ class GameModelAdapter extends TypeAdapter<GameModel> {
   @override
   void write(BinaryWriter writer, GameModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.board)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class GameModelAdapter extends TypeAdapter<GameModel> {
       ..writeByte(3)
       ..write(obj.energyUsed)
       ..writeByte(4)
-      ..write(obj.energyRemaining);
+      ..write(obj.energyRemaining)
+      ..writeByte(5)
+      ..write(obj.clicksUsed);
   }
 
   @override

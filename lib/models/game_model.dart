@@ -19,10 +19,14 @@ class GameModel extends HiveObject {
   @HiveField(4)
   int energyRemaining;
 
+  @HiveField(5, defaultValue: 0)
+  int clicksUsed;
+
   GameModel({
     List<int>? board,
     this.levelNumber = 1,
     List<int>? brush,
+    this.clicksUsed = 0,
     this.energyUsed = 0,
     this.energyRemaining = 0,
   }) : board = List<int>.of(board ?? List<int>.filled(36, 0)),
